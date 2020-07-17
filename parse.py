@@ -6,6 +6,8 @@ cache = {}
 LAZY = True
 
 def evaluated(sym):
+    # print(sym, end="...")
+    # sys.stdout.flush()
     if sym not in cache:
         cache[sym] = values[sym]()
     return cache[sym]
@@ -16,7 +18,7 @@ class Symbol(object):
         self.val = val
 
     def __call__(self, x=None):
-        if LAZY:
+        if LAZY or self.val in [":1202", ":1126", ":1131", ":1221", ":1133", ":1127", ":1208", ":1132", ":1138", ":1128", ":1207", ":1117", ":1118", ":1119", ":1124"]:
             if x is None:
                 return self
             return Symbol("{0}({1})".format(self.val, x))
@@ -340,8 +342,6 @@ print("Parsing {0} entites ok".format(len(values)))
 
 LAZY = False
 for v in values:
-    break
-    # if v <= ":1096":
     print(v, end="...")
     sys.stdout.flush()
-    print(values[v]())
+    print(evaluated(v))
