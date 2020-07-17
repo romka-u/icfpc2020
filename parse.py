@@ -333,10 +333,15 @@ for line in sys.stdin:
     first, last = line.strip().split("=")
     first = first.strip()
     values[first] = parse(last.strip().split(), 0)[0]
-    # print(first, values[first]())
+    if first == ":1202":
+        print(first, values[first]())
 
-print("Parsing {0} entites ok".format(values.size()))
+print("Parsing {0} entites ok".format(len(values)))
 
 LAZY = False
 for v in values:
-    print(v, values[v]())
+    break
+    # if v <= ":1096":
+    print(v, end="...")
+    sys.stdout.flush()
+    print(values[v]())
