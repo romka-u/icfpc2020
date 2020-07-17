@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 		client.Post(serverUrl.c_str(), playerKey.c_str(), "text/plain");
 
 	if (!serverResponse) {
-		std::cout << "Unexpected server response:\nNo response from server" << std::endl;
+		std::cout << "Unexpected server response:\nNo response from server!" << std::endl;
 		return 1;
 	}
 
