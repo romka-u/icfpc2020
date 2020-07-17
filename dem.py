@@ -23,6 +23,8 @@ def dem(s):
         s = s[2:]
         x, s = dem(s)
         y, s = dem(s)
+        if y == None:
+            return x, s
         return (x, y), s
 
     if s[:2] == "00":
@@ -30,4 +32,5 @@ def dem(s):
     assert False
 
 for line in sys.stdin:
-    print(dem(line.strip()))
+    r = dem(line.strip())
+    print(r[0])
