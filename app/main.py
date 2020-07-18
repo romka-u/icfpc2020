@@ -80,7 +80,8 @@ def make_join_request(key):
     return m
 
 def make_start_request(key, resp):
-    m = mod([3, [key, [[0, [0, [0, [0, None]]]], None]]])
+    m = mod([3, [key, [None, None]]])
+    # m = mod([3, [key, [[0, [0, [0, [0, None]]]], None]]])
     return m
 
 def make_commands_request(key, resp):
