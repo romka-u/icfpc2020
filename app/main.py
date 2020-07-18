@@ -93,7 +93,7 @@ def signum(number):
     return 0
 
 def make_commands_request(key, resp):
-    my_coords = dem(resp)[3][2][0][0][2]
+    my_coords = flatten(dem(resp))[3][2][0][0][2]
     print("my_coords =", my_coords)
     dx = signum(my_coords[0])
     dy = signum(my_coords[1])
@@ -124,7 +124,11 @@ def main():
     print("->", dem(join_request))
     game_response = send(join_request)
     print("<-", dem(game_response))
-    my_type = dem(game_response)[2][1]
+    tmp = flatten(dem(game_response))[2]
+    if tmp is None:
+      my_type = -1
+    else:
+      my_type = tmp[1]
     print("my_type =", my_type)
 
     start_request = make_start_request(player_key, game_response)
