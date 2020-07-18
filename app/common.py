@@ -13,6 +13,15 @@ class Point(object):
             self.x = args[0]
             self.y = args[1]
 
+    def aslist(self):
+        return (self.x, self.y)
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Point(self.x - other.x, self.y - other.y)
+
 
 class Ship(object):
     def __init__(self, pos, speed, player_type, ship_id):
@@ -23,17 +32,25 @@ class Ship(object):
 
 
 def parse_ship(ship_list):
-    pos = Point(ship_list[0][2])
-    speed = Point(ship_list[0][3])
-    player_type = ship_list[0][0]
-    ship_id = ship_list[0][1]
+    ship_info = ship_list[0]
+    pos = Point(ship_info[2])
+    speed = Point(ship_info[3])
+    player_type = ship_info[0]
+    ship_id = ship_info[1]
     return Ship(pos, speed, player_type, ship_id)
 
 
 class GameState(object):
     def __init__(self, a):
-        self.ships = list(map(parse_ship, a[3][2]))
-        self.my_type = a[2][1]
+        self.ships = []
+        self.my_type = 0
+
+        try:
+            self.ships = list(map(parse_ship, a[3][2]))
+            self.my_type = a[2][1]
+        except:
+            print("Can not parse game state")
+            pass
 
 
 def flatten(a):

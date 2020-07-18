@@ -1,6 +1,6 @@
 import sys
 import pygame
-from common import flatten
+from common import flatten, GameState, Point
 
 # print(flatten((None, (1559918512028036058, ((112, (None, (4, (16, None)))), None)))))
 
@@ -18,6 +18,9 @@ def parse_line(line):
     # print(a, "--f->", f)
     return f
 
+def to_screen(pos):
+    return (w // 2 + sz * pos.x, h // 2 + sz * pos.y)
+
 def main():
     outs, ins = [], []
     for line in sys.stdin:
@@ -34,6 +37,7 @@ def main():
 
     turn = 0
 
+    global sz
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -51,14 +55,24 @@ def main():
                     if turn + 1 < len(outs):
                         turn += 1
 
+        gs = GameState(ins[turn])
         screen.fill(0)
         print("=" * 20)
         print("turn {}/{}".format(turn, len(outs)))
         print("sent -> {}".format(outs[turn]))
         print("got  <- {}".format(ins[turn]))
+
+        for sh in gs.ships:
+            if sh.player_type == gs.my_type:
+                color = (0, 192, 0)
+            else:
+                color = (192, 0, 0)
+
+            pygame.draw.circle(screen, color, to_screen(sh.pos), 20, 3)
+            pygame.draw.line(screen, color, to_screen(sh.pos), to_screen(sh.pos + sh.speed), 3)
+
         tt = font.render('turn {}/{}'.format(turn, len(outs)), 1, (192, 192, 192))
         # print(dir(tt.get_rect()))
-
         screen.blit(tt, (10, 5))
         pygame.display.update()
 
