@@ -1,15 +1,21 @@
 import sys
 
-sys.setrecursionlimit(1234567)
+sys.setrecursionlimit(123456)
 values = {}
 cache = {}
 
-def evaluated(sym):
+def evaluated(sym, arg=None):
     # print(sym, end="...")
     # sys.stdout.flush()
-    if sym not in cache:
-        cache[sym] = values[sym]()
-    return cache[sym]
+    if arg is None:
+        if sym not in cache:
+            cache[sym] = values[sym]()
+        return cache[sym]
+    else:
+        key = (sym, str(arg))
+        if key not in cache:
+            cache[key] = Ap(values[sym], arg)()
+        return cache[key]
 
 
 class Symbol(object):
@@ -20,6 +26,11 @@ class Symbol(object):
         if x is None:
             return evaluated(self.key)
             # return values[self.key]()
+        #while isinstance(x, Ap):
+        #    x = x()
+        #if isinstance(x, Number):
+        #    return evaluated(self.key, x.val)
+        return evaluated(self.key, x)
         return Ap(values[self.key], x)()
 
     def __repr__(self):
@@ -263,8 +274,11 @@ class Ap(object):
     def __init__(self, a, b):
         self.first = a
         self.second = b
+        self.res = None
 
     def __call__(self):
+        if self.res is not None:
+            return self.res
         global SH, LIM
         if SH < LIM:
             print(" " * SH, self) # , ":", self.first, self.second)
@@ -287,6 +301,7 @@ class Ap(object):
         SH -= 2
         if SH < LIM:
             print(" " * SH, "!!! result:", res)
+        self.res = res
         return res
 
     def __str__(self):
@@ -392,8 +407,7 @@ def send(x):
     raise x
 
 def multipledraw(x):
-    print("Multiple draw", x)
-    raise x
+    print("Multiple draw", unroll(x))
 
 """
 ap ap f38 x2 x0 = ap ap ap if0 ap car x0 ( ap modem ap car ap cdr x0 , ap multipledraw ap car ap cdr ap cdr x0 ) |ap ap ap interact x2 |ap modem ap car ap cdr x0| |ap send ap car ap cdr ap cdr x0||
@@ -401,19 +415,28 @@ ap ap ap interact x2 x4 x3 = ap ap f38 x2 ap ap x2 x4 x3
 """
 def f38(x2, x0):
     print("Call f38", x2, x0)
-    if isinstance(Car()(x0), Nil):
-        isnil
+    a = Car()(x0)
+    print("a:", a, ",type:", type(a))
+    assert(isinstance(a, Number))
+    if a.val == 0:
+        print("a.val is 0")
         first = modem(Car()(Cdr()(x0)))
+        print("first done")
         second = multipledraw(Car()(Cdr()(Cdr()(x0))))
+        print("second done")
         #return Cons()(first)(Cons()(second)(Nil()))
         return Cons()(first)(second)
     else:
+        print("a.val is not 0")
         rm = modem(Car()(Cdr()(x0)))
+        print("modem done")
         rs = send(Car()(Cdr()(Cdr()(x0))))
+        print("send done")
         interact(x2, rm, rs)
 
 
 def interact(x2, x4, x3):
+    print("Run interact with", x2, x4, x3)
     return f38(x2, Ap(Ap(x2, x4), x3)())
 
 
@@ -500,4 +523,11 @@ for v in values:
     sys.stdout.flush()
     print(evaluated(v))
 
-interact(evaluated("galaxy"), Nil(), Cons()(Number(0))(Number(0)))
+res = Nil()
+cnt = 0
+while True:
+    res = interact(evaluated("galaxy"), res, Cons()(Number(0))(Number(0)))
+    sys.stderr.write(str(res))
+    sys.stderr.flush()
+    cnt += 1
+    res = res.val[0]
