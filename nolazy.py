@@ -1,4 +1,7 @@
 import sys
+import pygame
+import random
+import requests
 
 sys.setrecursionlimit(123456)
 values = {}
@@ -31,7 +34,7 @@ class Symbol(object):
         #if isinstance(x, Number):
         #    return evaluated(self.key, x.val)
         return evaluated(self.key, x)
-        return Ap(values[self.key], x)()
+        # return Ap(values[self.key], x)()
 
     def __repr__(self):
         return self.key
@@ -388,13 +391,46 @@ def mod(x):
 
     fail
 
+def parse_int(s):
+    sz = 0
+    while s[0] == "1":
+        sz += 1
+        s = s[1:]
+    s = s[1:]
+    bits = 4 * sz
+    if bits == 0:
+        return 0, s
+    return int(s[:bits], 2), s[bits:]
+
+def dem(s):
+    # print("dem", s)
+    assert len(s) >= 2
+    if s[:2] == "01":
+        x, s = parse_int(s[2:])
+        return Number(x), s
+
+    if s[:2] == "10":
+        x, s = parse_int(s[2:])
+        return Number(-x), s
+
+    if s[:2] == "11":
+        s = s[2:]
+        x, s = dem(s)
+        y, s = dem(s)
+        return Cons()(x)(y), s
+
+    if s[:2] == "00":
+        return Nil(), s[2:]
+
+    assert False
+
 
 def modem(x):
     print("Will call modem", x)
-    res = unroll(x)
-    print("unrolled:", res)
-    rm = mod(res)
-    print("modulated:", rm)
+    # res = unroll(x)
+    # print("unrolled:", res)
+    # rm = mod(res)
+    # print("modulated:", rm)
     return x
 
 
@@ -404,10 +440,43 @@ def send(x):
     print("unrolled:", res)
     rm = mod(res)
     print("modulated:", rm)
-    raise x
+    r = requests.post("https://icfpc2020-api.testkontur.ru/aliens/send?apiKey=1242ae59bc9f4385b3c3eaa60764a09c", data=rm)
+    answer = str(r.json())
+    print("answer:", answer)
+    d = dem(answer)[0]
+    print("demodulated", d)
+    return d
+
+
+def cell_to_pos(cx, cy):
+    return cx * sz + w // 2, cy * sz + h // 2
+
+
+def setpixel(p, color):
+    if p not in pixels:
+        pixels[p] = color
+    else:
+        c = pixels[p]
+        pixels[p] = ((c[0] + color[0]) // 2, (c[1] + color[1]) // 2, (c[2] + color[2]) // 2)
+
+def draw(x, color):
+    print("Draw", x)
+    while not isinstance(x, Nil):
+        assert(isinstance(x, Cons))
+        cur = x.val[0]
+        # pos = cell_to_pos(cur.val[0].val, cur.val[1].val)
+        setpixel((cur.val[0].val, cur.val[1].val), color)
+        # pygame.draw.rect(screen, color, (pos[0], pos[1], sz, sz))
+        x = x.val[1]
+
 
 def multipledraw(x):
-    print("Multiple draw", unroll(x))
+    ur = unroll(x)
+    print("Multiple draw", ur)
+    while not isinstance(ur, Nil):
+        assert(isinstance(ur, Cons))
+        draw(ur.val[0], (random.randint(32, 255), random.randint(32, 255), random.randint(32, 255)))
+        ur = ur.val[1]
 
 """
 ap ap f38 x2 x0 = ap ap ap if0 ap car x0 ( ap modem ap car ap cdr x0 , ap multipledraw ap car ap cdr ap cdr x0 ) |ap ap ap interact x2 |ap modem ap car ap cdr x0| |ap send ap car ap cdr ap cdr x0||
@@ -432,7 +501,7 @@ def f38(x2, x0):
         print("modem done")
         rs = send(Car()(Cdr()(Cdr()(x0))))
         print("send done")
-        interact(x2, rm, rs)
+        return interact(x2, rm, rs)
 
 
 def interact(x2, x4, x3):
@@ -523,11 +592,84 @@ for v in values:
     sys.stdout.flush()
     print(evaluated(v))
 
+pygame.init()
+w = 1600
+h = 1000
+sz = 16
+screen = pygame.display.set_mode([w, h])
+pixels = {}
+
+def pos_to_cell(pos):
+    x = (pos[0] - w//2) // sz
+    y = (pos[1] - h//2) // sz
+    return (x, y)
+
 res = Nil()
 cnt = 0
-while True:
-    res = interact(evaluated("galaxy"), res, Cons()(Number(0))(Number(0)))
-    sys.stderr.write(str(res))
-    sys.stderr.flush()
-    cnt += 1
+clicks = [
+    (-6, -1),
+    (0, 0),
+    (0, 0),
+    (0, 0),
+    (0, 0),
+    (0, 0),
+    (0, 0),
+    (0, 0),
+    (0, 0),
+    (8, 4),
+    (2, -8),
+    (3, 6),
+    (0, -14),
+    (-4, 10),
+    (9, -3),
+    (-4, 10),
+    (1, 4),
+    (0, 0),
+]
+
+for cell in clicks:
+    res = interact(evaluated("galaxy"), res, Cons()(Number(cell[0]))(Number(cell[1])))
+    print(res)
     res = res.val[0]
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pos = event.pos
+            cell = pos_to_cell(pos)
+            print("Clicked on", cell)
+            # cell = (0, 0)
+            # clicks.append(cell)
+            # with open("clicks.txt", "w") as out:
+            #     for c in clicks:
+            #         out.write("{0} {1}\n".format(*c))
+            screen.fill(0)
+            pixels = {}
+            res = interact(evaluated("galaxy"), res, Cons()(Number(cell[0]))(Number(cell[1])))
+            print(res)
+            for p in pixels:
+                pos = cell_to_pos(*p)
+                pygame.draw.rect(screen, pixels[p], (pos[0], pos[1], sz, sz))
+            pygame.display.update()
+            res = res.val[0]
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:
+                sz += 2
+            if event.key == pygame.K_2 and sz > 2:
+                sz -= 2
+            screen.fill(0)
+            for p in pixels:
+                pos = cell_to_pos(*p)
+                pygame.draw.rect(screen, pixels[p], (pos[0], pos[1], sz, sz))
+            pygame.display.update()
+
+
+    # res = interact(evaluated("galaxy"), res, Cons()(Number(0))(Number(0)))
+    # sys.stderr.write(str(res))
+    # sys.stderr.flush()
+    # cnt += 1
+    # res = res.val[0]
+
