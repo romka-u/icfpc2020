@@ -37,7 +37,7 @@ def mod(x):
     fail
 
 def make_join_request(key):
-    m = mod([2, [key, None]])
+    m = mod([2, [key, [None, None]]])
     return m
 
 def make_start_request(key, resp):
