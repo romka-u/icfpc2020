@@ -59,9 +59,9 @@ while True:
             (x, y) = cell
             intro = open('g.txt', 'r').read()
             intro += 'ap ap ap interact :galaxy ' + state + ' ap ap cons ' + str(x) + ' ' + str(y) + '\n'
-            open('za.txt', 'w').write(intro)
-            os.system('sol.exe <za.txt >z.hs')
-            lines = open('z.hs', 'r').readlines()
+            open('tmp/za.txt', 'w').write(intro)
+            os.system('sol.exe <tmp/za.txt >tmp/z.hs')
+            lines = open('tmp/z.hs', 'r').readlines()
             line = lines[4].strip().split()
             state = ''
             balance = 0

@@ -389,9 +389,9 @@ struct Node {
           debug(x0->repr());
           string to_send = x0->modulate();
 //          debug(to_send);
-          system(("curl -X POST \"https://icfpc2020-api.testkontur.ru/aliens/send?apiKey=1242ae59bc9f4385b3c3eaa60764a09c\" -H  \"accept: */*\" -H  \"Content-Type: text/plain\" -d \"" + to_send + "\" >zcurlout 2>znul").c_str());
+          system(("curl -X POST \"https://icfpc2020-api.testkontur.ru/aliens/send?apiKey=1242ae59bc9f4385b3c3eaa60764a09c\" -H  \"accept: */*\" -H  \"Content-Type: text/plain\" -d \"" + to_send + "\" >tmp/zcurlout 2>tmp/znul").c_str());
           string received;
-          ifstream in("zcurlout");
+          ifstream in("tmp/zcurlout");
           in >> received;
           in.close();
 //          debug(received);
