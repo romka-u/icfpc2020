@@ -1,4 +1,5 @@
 .vscode/
 .vs/
 build/
+play/saves/
 Dockerfile
