@@ -40,6 +40,20 @@ def makeJoinRequest(key):
     m = mod([2, [key, None]])
     return m
 
+def makeStartRequest(key, resp):
+    m = mod([3, [key, [[5, [0, [0, [0, None]]]], None]]])
+    return m
+
+def send(x):
+    res = requests.post(sys.argv[1], data=x)
+    if res.status_code != 200:
+        print('Unexpected server response:')
+        print('HTTP code:', res.status_code)
+        print('Response body:', res.text)
+        exit(2)
+    # print('Server response:', res.text)
+    return res.text
+
 def main():
     server_url = sys.argv[1]
     player_key = sys.argv[2]
@@ -47,14 +61,13 @@ def main():
 
     joinRequest = makeJoinRequest(player_key)
     print("jr:", joinRequest)
+    gameResponse = send(joinRequest)
+    print("gameResponse:", gameResponse)
 
-    res = requests.post(server_url, data=joinRequest)
-    if res.status_code != 200:
-        print('Unexpected server response:')
-        print('HTTP code:', res.status_code)
-        print('Response body:', res.text)
-        exit(2)
-    print('Server response:', res.text)
+    startRequest = makeStartRequest(playerKey, gameResponse)
+    print("sr:", startRequest)
+    startResponse = send(startRequest)
+    print("startResponse:", startResponse)
 
 
 if __name__ == '__main__':
