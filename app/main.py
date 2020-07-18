@@ -1,5 +1,6 @@
 import requests
 import sys
+from common import flatten
 
 def mod_num(num):
     if num == 0:
@@ -92,7 +93,7 @@ def signum(number):
     return 0
 
 def make_commands_request(key, resp):
-    my_coords = resp[1][1][1][0][1][1][0][0][0][1][1][0]
+    my_coords = dem(resp)[3][2][0][0][2]
     print("my_coords =", my_coords)
     dx = signum(my_coords[0])
     dy = signum(my_coords[1])
@@ -123,7 +124,7 @@ def main():
     print("->", dem(join_request))
     game_response = send(join_request)
     print("<-", dem(game_response))
-    my_type = game_response[1][1][0][1][0]
+    my_type = dem(game_response)[2][1]
     print("my_type =", my_type)
 
     start_request = make_start_request(player_key, game_response)
