@@ -73,6 +73,8 @@ def main():
     game_response = send(start_request)
     print("game_response:", game_response)
 
+    sys.stdout.flush()
+
     while True:
         commands_request = make_commands_request(player_key, game_response)
         # print("cr:", commands_request)
