@@ -104,26 +104,25 @@ def send(x):
 def main():
     server_url = sys.argv[1]
     player_key = sys.argv[2]
-    print(dem("1101100010110111111111111111110000100010101001101011101100111100111110110111110001000110011001100"))
     print('ServerUrl: %s; PlayerKey: %s' % (server_url, player_key))
 
     join_request = make_join_request(player_key)
-    print("jr:", join_request)
+    print("->", dem(join_request))
     game_response = send(join_request)
-    print("game_response:", game_response, dem(game_response))
+    print("<-", dem(game_response))
 
     start_request = make_start_request(player_key, game_response)
-    print("sr:", start_request)
+    print("->", dem(start_request))
     game_response = send(start_request)
-    print("game_response:", game_response, dem(game_response))
-
+    print("<-", dem(game_response))
     sys.stdout.flush()
 
     while True:
         commands_request = make_commands_request(player_key, game_response)
-        print("cr:", commands_request, dem(commands_request))
+        print("->", dem(commands_request))
         game_response = send(commands_request)
-        print("game_response:", game_response, dem(game_response))
+        print("<-", dem(game_response))
+        sys.stdout.flush()
 
 
 if __name__ == '__main__':
