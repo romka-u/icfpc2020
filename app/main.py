@@ -84,8 +84,21 @@ def make_start_request(key, resp):
     m = mod([3, [key, [[112, [64, [4, [16, None]]]], None]]])
     return m
 
+def signum(number):
+    if number > 0:
+        return 1
+    if number < 0:
+        return -1
+    return 0
+
 def make_commands_request(key, resp):
-    m = mod((4, (key, (None, None))))
+    my_coords = resp[1][1][1][0][1][1][0][0][0][1][1][0]
+    print("my_coords =", my_coords)
+    dx = signum(my_coords[0])
+    dy = signum(my_coords[1])
+    print("go", dx, dy)
+    m = mod((4, (key, (((0, (0, ((dx, dy), None))), None), None))))
+    #m = mod((4, (key, (None, None))))
     return m
 
 def send(x):
@@ -110,6 +123,8 @@ def main():
     print("->", dem(join_request))
     game_response = send(join_request)
     print("<-", dem(game_response))
+    my_type = game_response[1][1][0][1][0]
+    print("my_type =", my_type)
 
     start_request = make_start_request(player_key, game_response)
     print("->", dem(start_request))
