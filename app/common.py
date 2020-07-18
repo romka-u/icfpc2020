@@ -15,24 +15,24 @@ class Point(object):
 
 
 class Ship(object):
-    def __init__(self, pos, acc, player_type, ship_id):
+    def __init__(self, pos, speed, player_type, ship_id):
         self.pos = pos
-        self.acc = acc
+        self.speed = speed
         self.player_type = player_type
         self.ship_id = ship_id
 
 
 def parse_ship(ship_list):
-    pos = Point(ship_list[2])
-    acc = Point(ship_list[3])
-    player_type = ship_list[0]
-    ship_id = ship_list[1]
-    return Ship(pos, acc, player_type, ship_id)
+    pos = Point(ship_list[0][2])
+    speed = Point(ship_list[0][3])
+    player_type = ship_list[0][0]
+    ship_id = ship_list[0][1]
+    return Ship(pos, speed, player_type, ship_id)
 
 
 class GameState(object):
     def __init__(self, a):
-        self.ships = map(parse_ship, a[3][2])
+        self.ships = list(map(parse_ship, a[3][2]))
         self.my_type = a[2][1]
 
 
@@ -48,6 +48,11 @@ def flatten(a):
         res = [res] + flatten(a[1])
         # print("flatten {}: got {}".format(a, res))
         return res
+
+#resp = flatten((1, (1, ((256, (1, ((448, (1, (64, None))), ((16, (128, None)), (None, None))))), ((2, ((16, (128, None)), ((((1, (0, ((-30, 48), ((-2, 0), ((110, (64, (4, (16, None)))), (8, (64, (1, None)))))))), (((0, ((1, -1), None)), None), None)), (((0, (1, ((27, -48), ((0, 0), ((324, (0, (10, (1, None)))), (0, (64, (2, None)))))))), (((0, ((0, 1), None)), None), None)), None)), None))), None)))))
+#resp = [1, 1, [256, 0, [512, 1, 64], [16, 128], [1, 2, 3, 4]], [2, [16, 128], [[[1, 0, [45, -41], [-2, 0], [1, 2, 3, 4], 0, 64, 1], None], [[0, 1, [-45, 41], [2, 0], [112, 64, 4, 16], 0, 64, 1], None]]]]
+#print(GameState(resp).ships[1].pos.y)
+
 """
 turn 3/2262
 sent -> [4, 289682608305907367, None]
