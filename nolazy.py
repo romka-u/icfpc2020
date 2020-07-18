@@ -1,9 +1,8 @@
 import sys
 
-sys.setrecursionlimit(12345)
+sys.setrecursionlimit(1234567)
 values = {}
 cache = {}
-LAZY = True
 
 def evaluated(sym):
     # print(sym, end="...")
@@ -15,7 +14,7 @@ def evaluated(sym):
 
 def to_list(a):
     global LAZY
-    while isinstance(a, Ap) and not LAZY:
+    while isinstance(a, Ap):
         a = a()
     try:
         return list(a)
@@ -28,13 +27,8 @@ class Symbol(object):
         self.key = key
 
     def __call__(self, x=None):
-        if LAZY:
-            if x is None:
-                return self
-            return Symbol("{0}({1})".format(self.key, x))
-
         if x is None:
-            return self
+            return evaluated(self.key)
         return Ap(values[self.key], x)()
 
     def __repr__(self):
@@ -42,38 +36,33 @@ class Symbol(object):
 
 
 class Cons(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = to_list(val)
 
-    def __call__(self, x=None):
-        return Cons(self.val + [x])
+    def __call__(self, x):
+        if len(self.val) == 2:
+            return Ap(Ap(x, self.val[0]), self.val[1])()
+        return Cons(self.val + [x() if isinstance(x, Ap) else x])
 
     def __repr__(self):
         return str(self.val)
 
 
 class Neg(object):
-    def __init__(self):
-        pass
+    def __call__(self, x):
+        return -x()
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        return -x
+    def __repr__(self):
+        return "Neg"
 
 
 class C(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None, y=None):
-        if x is None:
-            return self
-        if len(self.val) == 2 and not LAZY:
-            return Ap(Ap(self.val[0], x), self.val[1])
-
-        if y is not None:
-            return C(self.val + [x, y])
+    def __call__(self, x):
+        if len(self.val) == 2:
+            return Ap(Ap(self.val[0], x), self.val[1])()
         return C(self.val + [x])
 
     def __repr__(self):
@@ -81,17 +70,13 @@ class C(object):
 
 
 class B(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None, y=None):
-        if x is None:
-            return self
-        if len(self.val) == 2 and not LAZY:
-            return Ap(self.val[0], Ap(self.val[1], x))
+    def __call__(self, x):
+        if len(self.val) == 2:
+            return Ap(self.val[0], Ap(self.val[1], x))()
 
-        if y is not None:
-            return B(self.val + [x, y])
         return B(self.val + [x])
 
     def __repr__(self):
@@ -99,14 +84,12 @@ class B(object):
 
 
 class S(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 2 and not LAZY:
-            return Ap(Ap(self.val[0], x), Ap(self.val[1], x))
+    def __call__(self, x):
+        if len(self.val) == 2:
+            return Ap(Ap(self.val[0], x), Ap(self.val[1], x))()
         return S(self.val + [x])
 
     def __repr__(self):
@@ -114,33 +97,22 @@ class S(object):
 
 
 class IsNil(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
-
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 2 and not LAZY:
-            first = self.val[0]()
-            assert(isinstance(first, Number))
-            if first.val == 0:
-                return self.val[1]()
-            else:
-                return x()
-        return IsNil(self.val + [x])
+    def __call__(self, x):
+        if isinstance(x() if isinstance(x, Ap) else x, Nil):
+            return T()
+        else:
+            return F()
 
     def __repr__(self):
-        return "IsNil({0})".format(",".join(map(str, self.val)))
+        return "IsNil"
 
 
 class Car(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 1 and not LAZY:
+    def __call__(self, x):
+        if len(self.val) == 1:
             return self.val[0]()
         return Car(self.val + [x])
 
@@ -149,13 +121,11 @@ class Car(object):
 
 
 class Cdr(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 1 and not LAZY:
+    def __call__(self, x):
+        if len(self.val) == 1:
             return x()
         return Cdr(self.val + [x])
 
@@ -164,13 +134,11 @@ class Cdr(object):
 
 
 class Add(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 1 and not LAZY:
+    def __call__(self, x):
+        if len(self.val) == 1:
             return self.val[0]() + x()
         return Add(self.val + [x])
 
@@ -179,13 +147,11 @@ class Add(object):
 
 
 class Mul(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 1 and not LAZY:
+    def __call__(self, x):
+        if len(self.val) == 1:
             return self.val[0]() * x()
         return Mul(self.val + [x])
 
@@ -194,13 +160,11 @@ class Mul(object):
 
 
 class Div(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 1 and not LAZY:
+    def __call__(self, x):
+        if len(self.val) == 1:
             return self.val[0]() // x()
         return Div(self.val + [x])
 
@@ -209,13 +173,11 @@ class Div(object):
 
 
 class T(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 1 and not LAZY:
+    def __call__(self, x):
+        if len(self.val) == 1:
             return self.val[0]()
         return T(self.val + [x])
 
@@ -224,13 +186,11 @@ class T(object):
 
 
 class F(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 1 and not LAZY:
+    def __call__(self, x):
+        if len(self.val) == 1:
             return x()
         return F(self.val + [x])
 
@@ -239,30 +199,21 @@ class F(object):
 
 
 class Lt(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 1 and not LAZY:
+    def __call__(self, x):
+        if len(self.val) == 1:
             a = self.val[0]()
-            while not isinstance(a, Number):
-                try:
-                    a = a()
-                    print(a)
-                except:
-                    break
-
             b = x()
-            print(a, type(a))
-            print(b, type(b))
+            #print(a, type(a))
+            #print(b, type(b))
             assert(isinstance(a, Number))
             assert(isinstance(b, Number))
             if a.val < b.val:
-                return T
+                return T()
             else:
-                return F
+                return F()
         return Lt(self.val + [x])
 
     def __repr__(self):
@@ -270,17 +221,21 @@ class Lt(object):
 
 
 class Eq(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if len(self.val) == 1 and not LAZY:
-            if self.val[0]() == x():
-                return T
+    def __call__(self, x):
+        if len(self.val) == 1:
+            a = self.val[0]()
+            b = x()
+            #print(a, type(a))
+            #print(b, type(b))
+            assert(isinstance(a, Number))
+            assert(isinstance(b, Number))
+            if a.val == b.val:
+                return T()
             else:
-                return F
+                return F()
         return Eq(self.val + [x])
 
     def __repr__(self):
@@ -288,18 +243,22 @@ class Eq(object):
 
 
 class I(object):
-    def __init__(self, a=[]):
-        self.val = to_list(a)
+    def __init__(self, val=[]):
+        self.val = val
 
-    def __call__(self, x=None):
-        if x is None:
-            return self
-        if not LAZY:
-            return x()
+    def __call__(self, x):
         return x
 
     def __repr__(self):
         return "I({0})".format(",".join(map(str, self.val)))
+
+
+class Nil(object):
+    def __call__(self):
+        return self
+
+    def __repr__(self):
+        return "nil"
 
 SH = 0
 LIM = 0
@@ -310,15 +269,13 @@ class Ap(object):
         self.second = b
 
     def __call__(self):
-        if isinstance(self.first, F):
-            return I()
         global SH, LIM
         if SH < LIM:
-            print(" " * SH, self, ":", self.first, self.second)
+            print(" " * SH, self) # , ":", self.first, self.second)
         #print("sf:", type(self.first))
         #print("sc:", type(self.second))
         SH += 2
-        arg = self.second() if self.second is not None else self.second
+        arg = self.second
         f = self.first
         #print("f:", f)
         #print("type f:", type(f))
@@ -327,21 +284,16 @@ class Ap(object):
         while isinstance(f, Ap):
             f = f()
 
-        try:
-            res = f(arg)
-        except:
-            print("f:", f)
-            print("type f:", type(f))
-            print("arg:", arg)
-            print("type arg:", type(arg))
-            arg = arg()
-            res = f(arg)
-
-        # if isinstance(res, Ap) and not LAZY: res = res()
+        res = f(arg)
+        while isinstance(res, Ap):
+            res = res()
         SH -= 2
         if SH < LIM:
             print(" " * SH, "!!! result:", res)
         return res
+
+    def __str__(self):
+        return str(self.first) + "(" + str(self.second) + ")"
 
 
 class Number(object):
@@ -392,7 +344,7 @@ def parse(tokens, shift):
         return Ap(first, second), tokens
 
     if cur == "cons":
-        return Cons, tokens
+        return Cons(), tokens
 
     try:
         x = int(cur)
@@ -401,49 +353,49 @@ def parse(tokens, shift):
         pass
 
     if cur == "nil":
-        return None, tokens
+        return Nil(), tokens
 
     if cur == "neg":
         return Neg(), tokens
 
     if cur == "c":
-        return C, tokens
+        return C(), tokens
 
     if cur == "b":
-        return B, tokens
+        return B(), tokens
 
     if cur == "s":
-        return S, tokens
+        return S(), tokens
 
     if cur == "isnil":
-        return IsNil, tokens
+        return IsNil(), tokens
 
     if cur == "car":
-        return Car, tokens
+        return Car(), tokens
 
     if cur == "cdr":
-        return Cdr, tokens
+        return Cdr(), tokens
 
     if cur == "eq":
-        return Eq, tokens
+        return Eq(), tokens
 
     if cur == "lt":
-        return Lt, tokens
+        return Lt(), tokens
 
     if cur == "add":
-        return Add, tokens
+        return Add(), tokens
 
     if cur == "mul":
-        return Mul, tokens
+        return Mul(), tokens
 
     if cur == "div":
-        return Div, tokens
+        return Div(), tokens
 
     if cur == "i":
-        return I, tokens
+        return I(), tokens
 
     if cur == "t":
-        return T, tokens
+        return T(), tokens
 
     print("Parse failed on: '{0}'".format(cur))
     assert False
@@ -452,12 +404,9 @@ for line in sys.stdin:
     first, last = line.strip().split("=")
     first = first.strip()
     values[first] = parse(last.strip().split(), 0)[0]
-    if first == ":1107":
-        print(first, values[first]())
 
 print("Parsing {0} entites ok".format(len(values)))
 
-LAZY = False
 for v in values:
     print(v, end="...")
     #sys.stderr.write(v)
