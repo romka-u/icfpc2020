@@ -43,7 +43,7 @@ def parse_ship(ship_list):
 class GameState(object):
     def __init__(self, a):
         self.ships = []
-        self.my_type = 0
+        self.my_type = -1
 
         try:
             self.ships = list(map(parse_ship, a[3][2]))

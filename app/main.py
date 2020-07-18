@@ -1,6 +1,6 @@
 import requests
 import sys
-from common import flatten
+from common import *
 
 def mod_num(num):
     if num == 0:
@@ -93,13 +93,21 @@ def signum(number):
     return 0
 
 def make_commands_request(key, resp):
-    my_coords = flatten(dem(resp))[3][2][0][0][2]
-    print("my_coords =", my_coords)
-    dx = -signum(my_coords[0])
-    dy = -signum(my_coords[1])
-    print("go", dx, dy)
-    m = mod((4, (key, (((0, (0, ((dx, dy), None))), None), None))))
-    #m = mod((4, (key, (None, None))))
+    game_state = GameState(resp)
+    print(game_state.my_type)
+    ops = None
+    for ship in game_state.ships:
+      if ship.player_type == game_state.my_type:
+        print("ship coords =", ship.pos.aslist())
+        dx = -signum(ship.pos.x)
+        dy = -signum(ship.pos.y)
+        if signum(ship.speed.x) == signum(ship.pos.x):
+          dx = 0
+        if signum(ship.speed.y) == signum(ship.pos.y):
+          dy = 0
+        print("go", dx, dy)
+        ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
+    m = mod((4, (key, (ops, None))))
     return m
 
 def send(x):
@@ -124,12 +132,6 @@ def main():
     print("->", dem(join_request))
     game_response = send(join_request)
     print("<-", dem(game_response))
-    tmp = flatten(dem(game_response))[2]
-    if tmp is None:
-      my_type = -1
-    else:
-      my_type = tmp[1]
-    print("my_type =", my_type)
 
     start_request = make_start_request(player_key, game_response)
     print("->", dem(start_request))
