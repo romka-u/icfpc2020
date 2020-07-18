@@ -93,7 +93,7 @@ def signum(number):
     return 0
 
 def make_commands_request(key, resp):
-    game_state = GameState(resp)
+    game_state = GameState(flatten(dem(resp)))
     print(game_state.my_type)
     ops = None
     for ship in game_state.ships:
