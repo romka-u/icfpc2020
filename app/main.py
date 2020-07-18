@@ -75,9 +75,9 @@ def main():
 
     while True:
         commands_request = make_commands_request(player_key, game_response)
-        print("cr:", commands_request)
+        # print("cr:", commands_request)
         game_response = send(commands_request)
-        print("game_response:", game_response)
+        # print("game_response:", game_response)
 
 
 if __name__ == '__main__':
