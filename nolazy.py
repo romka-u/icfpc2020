@@ -12,16 +12,6 @@ def evaluated(sym):
     return cache[sym]
 
 
-def to_list(a):
-    global LAZY
-    while isinstance(a, Ap):
-        a = a()
-    try:
-        return list(a)
-    except:
-        return [a]
-
-
 class Symbol(object):
     def __init__(self, key):
         self.key = key
@@ -29,6 +19,7 @@ class Symbol(object):
     def __call__(self, x=None):
         if x is None:
             return evaluated(self.key)
+            # return values[self.key]()
         return Ap(values[self.key], x)()
 
     def __repr__(self):
@@ -37,7 +28,7 @@ class Symbol(object):
 
 class Cons(object):
     def __init__(self, val=[]):
-        self.val = to_list(val)
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 2:
@@ -59,7 +50,7 @@ class Neg(object):
 
 class C(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 2:
@@ -67,12 +58,12 @@ class C(object):
         return C(self.val + [x])
 
     def __repr__(self):
-        return "C({0})".format(",".join(map(str, self.val)))
+        return "C({0})".format(",".join(map(str, self.val))) if self.val else "C"
 
 
 class B(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 2:
@@ -81,12 +72,12 @@ class B(object):
         return B(self.val + [x])
 
     def __repr__(self):
-        return "B({0})".format(",".join(map(str, self.val)))
+        return "B({0})".format(",".join(map(str, self.val))) if self.val else "B"
 
 
 class S(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 2:
@@ -94,12 +85,15 @@ class S(object):
         return S(self.val + [x])
 
     def __repr__(self):
-        return "S({0})".format(",".join(map(str, self.val)))
+        return "S({0})".format(",".join(map(str, self.val))) if self.val else "S"
 
 
 class IsNil(object):
     def __call__(self, x):
-        if isinstance(x() if isinstance(x, Ap) else x, Nil):
+        while isinstance(x, Ap) or isinstance(x, Symbol):
+            x = x()
+        assert(isinstance(x, Cons) or isinstance(x, Nil))
+        if isinstance(x, Nil):
             return T()
         else:
             return F()
@@ -109,54 +103,40 @@ class IsNil(object):
 
 
 class Car(object):
-    def __init__(self, val=[]):
-        self.val = list(val)
-
     def __call__(self, x):
-        if len(self.val) == 1:
-            return self.val[0]()
-        if isinstance(x, Ap) or isinstance(x, Symbol):
+        # if len(self.val) == 1:
+        #     return self.val[0]()
+        while isinstance(x, Ap) or isinstance(x, Symbol):
             x = x()
         if not isinstance(x, Cons):
             print(x)
             print(type(x))
         assert isinstance(x, Cons)
-        self.val += x.val
-        # print("Call car", self.val)
-        res = self.val[0]()
-        # print("Will return", res)
-        return res
+        return x.val[0]()
 
     def __repr__(self):
-        return "Car({0})".format(",".join(map(str, self.val)))
+        return "Car"
 
 
 class Cdr(object):
-    def __init__(self, val=[]):
-        self.val = list(val)
-
     def __call__(self, x):
-        if len(self.val) == 1:
-            return x()
-        if isinstance(x, Ap) or isinstance(x, Symbol):
+        # if len(self.val) == 1:
+        #     return x()
+        while isinstance(x, Ap) or isinstance(x, Symbol):
             x = x()
         if not isinstance(x, Cons):
             print(x)
             print(type(x))
         assert isinstance(x, Cons)
-        self.val += x.val
-        # print("Call cdr", self.val)
-        res = self.val[1]()
-        # print("Will return", res)
-        return res
+        return x.val[1]()
 
     def __repr__(self):
-        return "Cdr({0})".format(",".join(map(str, self.val)))
+        return "Cdr"
 
 
 class Add(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 1:
@@ -164,12 +144,12 @@ class Add(object):
         return Add(self.val + [x])
 
     def __repr__(self):
-        return "Add({0})".format(",".join(map(str, self.val)))
+        return "Add({0})".format(",".join(map(str, self.val))) if self.val else "Add"
 
 
 class Mul(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 1:
@@ -177,12 +157,12 @@ class Mul(object):
         return Mul(self.val + [x])
 
     def __repr__(self):
-        return "Mul({0})".format(",".join(map(str, self.val)))
+        return "Mul({0})".format(",".join(map(str, self.val))) if self.val else "Mul"
 
 
 class Div(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 1:
@@ -190,12 +170,12 @@ class Div(object):
         return Div(self.val + [x])
 
     def __repr__(self):
-        return "Div({0})".format(",".join(map(str, self.val)))
+        return "Div({0})".format(",".join(map(str, self.val))) if self.val else "Div"
 
 
 class T(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 1:
@@ -203,12 +183,12 @@ class T(object):
         return T(self.val + [x])
 
     def __repr__(self):
-        return "T({0})".format(",".join(map(str, self.val)))
+        return "T({0})".format(",".join(map(str, self.val))) if self.val else "T"
 
 
 class F(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 1:
@@ -216,21 +196,17 @@ class F(object):
         return F(self.val + [x])
 
     def __repr__(self):
-        return "F({0})".format(",".join(map(str, self.val)))
+        return "F({0})".format(",".join(map(str, self.val))) if self.val else "F"
 
 
 class Lt(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 1:
             a = self.val[0]()
-            try:
-                b = x()
-            except:
-                print(x, type(x))
-                raise 5
+            b = x()
             assert(isinstance(a, Number))
             assert(isinstance(b, Number))
             if a.val < b.val:
@@ -240,12 +216,12 @@ class Lt(object):
         return Lt(self.val + [x])
 
     def __repr__(self):
-        return "Lt({0})".format(",".join(map(str, self.val)))
+        return "Lt({0})".format(",".join(map(str, self.val))) if self.val else "Lt"
 
 
 class Eq(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 1:
@@ -262,18 +238,15 @@ class Eq(object):
         return Eq(self.val + [x])
 
     def __repr__(self):
-        return "Eq({0})".format(",".join(map(str, self.val)))
+        return "Eq({0})".format(",".join(map(str, self.val))) if self.val else "Eq"
 
 
 class I(object):
-    def __init__(self, val=[]):
-        self.val = val
-
     def __call__(self, x):
         return x
 
     def __repr__(self):
-        return "I({0})".format(",".join(map(str, self.val)))
+        return "I"
 
 
 class Nil(object):
@@ -355,9 +328,6 @@ class Number(object):
         return self.val > other.val
 
 
-def modem(x):
-    print("Will call modem", x)
-    return x
 
 def unroll(x):
     if isinstance(x, Number) or isinstance(x, Nil):
@@ -368,14 +338,57 @@ def unroll(x):
         return Cons()(unroll(x.val[0]()))(unroll(x.val[1]()))
 
     print("x:", x, ", type:", type(x))
-    sdfjhg
+    fail
+
+def mod_num(num):
+    if num == 0:
+        return "010"
+
+    m = abs(num)
+    sgn = "01" if num > 0 else "10"
+    for sz in range(1, 10 ** 9):
+        if 2 ** (4 * sz) > m:
+            return sgn + ("1" * sz) + "0" + bin(m)[2:].zfill(4 * sz)
+
+assert mod_num(16) == "0111000010000"
+assert mod_num(-16) == "1011000010000"
+assert mod_num(2) == "01100010"
+assert mod_num(-2) == "10100010"
+
+def mod(x):
+    """
+    if isinstance(x, Nil):
+        return "(00)"
+    if isinstance(x, Number):
+        return mod_num(x.val)
+    if isinstance(x, Cons):
+        return "(11|" + mod(x.val[0]) + "|" + mod(x.val[1]) + ")"
+    """
+    if isinstance(x, Nil):
+        return "00"
+    if isinstance(x, Number):
+        return mod_num(x.val)
+    if isinstance(x, Cons):
+        return "11" + mod(x.val[0]) + mod(x.val[1])
+
+    fail
+
+
+def modem(x):
+    print("Will call modem", x)
+    res = unroll(x)
+    print("unrolled:", res)
+    rm = mod(res)
+    print("modulated:", rm)
+    return x
+
 
 def send(x):
     print("Will send", x, type(x))
     res = unroll(x)
     print("unrolled:", res)
-    if x.val == 1:
-        return Cons()(Number(0))(Nil())
+    rm = mod(res)
+    print("modulated:", rm)
     raise x
 
 def multipledraw(x):
@@ -387,14 +400,16 @@ ap ap f38 x2 x0 = ap ap ap if0 ap car x0 ( ap modem ap car ap cdr x0 , ap multip
 ap ap ap interact x2 x4 x3 = ap ap f38 x2 ap ap x2 x4 x3
 """
 def f38(x2, x0):
+    print("Call f38", x2, x0)
     if isinstance(Car()(x0), Nil):
+        isnil
         first = modem(Car()(Cdr()(x0)))
         second = multipledraw(Car()(Cdr()(Cdr()(x0))))
         #return Cons()(first)(Cons()(second)(Nil()))
         return Cons()(first)(second)
     else:
-        rs = send(Car()(Cdr()(Cdr()(x0))))
         rm = modem(Car()(Cdr()(x0)))
+        rs = send(Car()(Cdr()(Cdr()(x0))))
         interact(x2, rm, rs)
 
 
@@ -480,7 +495,7 @@ for line in sys.stdin:
 print("Parsing {0} entites ok".format(len(values)))
 
 for v in values:
-    print(v, end="...")
+    print(v, end=" = ")
     #sys.stderr.write(v)
     sys.stdout.flush()
     print(evaluated(v))
