@@ -110,22 +110,22 @@ class IsNil(object):
 
 class Car(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 1:
             return self.val[0]()
-        if isinstance(x, Ap):
+        if isinstance(x, Ap) or isinstance(x, Symbol):
             x = x()
         if not isinstance(x, Cons):
             print(x)
             print(type(x))
         assert isinstance(x, Cons)
         self.val += x.val
-        # if len(self.val) == 2:
-        return self.val[0]()
-
-        return Car(self.val + [x])
+        # print("Call car", self.val)
+        res = self.val[0]()
+        # print("Will return", res)
+        return res
 
     def __repr__(self):
         return "Car({0})".format(",".join(map(str, self.val)))
@@ -133,21 +133,22 @@ class Car(object):
 
 class Cdr(object):
     def __init__(self, val=[]):
-        self.val = val
+        self.val = list(val)
 
     def __call__(self, x):
         if len(self.val) == 1:
             return x()
-        if isinstance(x, Ap):
+        if isinstance(x, Ap) or isinstance(x, Symbol):
             x = x()
         if not isinstance(x, Cons):
             print(x)
             print(type(x))
         assert isinstance(x, Cons)
         self.val += x.val
-        # if len(self.val) == 2:
-        return self.val[1]()
-        return Cdr(self.val + [x])
+        # print("Call cdr", self.val)
+        res = self.val[1]()
+        # print("Will return", res)
+        return res
 
     def __repr__(self):
         return "Cdr({0})".format(",".join(map(str, self.val)))
@@ -225,9 +226,11 @@ class Lt(object):
     def __call__(self, x):
         if len(self.val) == 1:
             a = self.val[0]()
-            b = x()
-            #print(a, type(a))
-            #print(b, type(b))
+            try:
+                b = x()
+            except:
+                print(x, type(x))
+                raise 5
             assert(isinstance(a, Number))
             assert(isinstance(b, Number))
             if a.val < b.val:
@@ -305,6 +308,7 @@ class Ap(object):
             f = f()
 
         res = f(arg)
+
         while isinstance(res, Ap):
             res = res()
         SH -= 2
@@ -349,6 +353,54 @@ class Number(object):
 
     def __gt__(self, other):
         return self.val > other.val
+
+
+def modem(x):
+    print("Will call modem", x)
+    return x
+
+def unroll(x):
+    if isinstance(x, Number) or isinstance(x, Nil):
+        return x
+    if isinstance(x, Ap):
+        return unroll(x())
+    if isinstance(x, Cons):
+        return Cons()(unroll(x.val[0]()))(unroll(x.val[1]()))
+
+    print("x:", x, ", type:", type(x))
+    sdfjhg
+
+def send(x):
+    print("Will send", x, type(x))
+    res = unroll(x)
+    print("unrolled:", res)
+    if x.val == 1:
+        return Cons()(Number(0))(Nil())
+    raise x
+
+def multipledraw(x):
+    print("Multiple draw", x)
+    raise x
+
+"""
+ap ap f38 x2 x0 = ap ap ap if0 ap car x0 ( ap modem ap car ap cdr x0 , ap multipledraw ap car ap cdr ap cdr x0 ) |ap ap ap interact x2 |ap modem ap car ap cdr x0| |ap send ap car ap cdr ap cdr x0||
+ap ap ap interact x2 x4 x3 = ap ap f38 x2 ap ap x2 x4 x3
+"""
+def f38(x2, x0):
+    if isinstance(Car()(x0), Nil):
+        first = modem(Car()(Cdr()(x0)))
+        second = multipledraw(Car()(Cdr()(Cdr()(x0))))
+        #return Cons()(first)(Cons()(second)(Nil()))
+        return Cons()(first)(second)
+    else:
+        rs = send(Car()(Cdr()(Cdr()(x0))))
+        rm = modem(Car()(Cdr()(x0)))
+        interact(x2, rm, rs)
+
+
+def interact(x2, x4, x3):
+    return f38(x2, Ap(Ap(x2, x4), x3)())
+
 
 
 def parse(tokens, shift):
@@ -433,3 +485,4 @@ for v in values:
     sys.stdout.flush()
     print(evaluated(v))
 
+interact(evaluated("galaxy"), Nil(), Cons()(Number(0))(Number(0)))
