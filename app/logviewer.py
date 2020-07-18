@@ -36,6 +36,7 @@ def main():
         outs = outs[:len(ins)]
 
     turn = 0
+    prev_turn = -1
 
     global sz
     while True:
@@ -57,10 +58,12 @@ def main():
 
         gs = GameState(ins[turn])
         screen.fill(0)
-        print("=" * 20)
-        print("turn {}/{}".format(turn, len(outs)))
-        print("sent -> {}".format(outs[turn]))
-        print("got  <- {}".format(ins[turn]))
+        if turn != prev_turn:
+            print("=" * 20)
+            print("turn {}/{}".format(turn, len(outs)))
+            print("sent -> {}".format(outs[turn]))
+            print("got  <- {}".format(ins[turn]))
+            prev_turn = turn
 
         for sh in gs.ships:
             if sh.player_type == gs.my_type:
@@ -71,7 +74,7 @@ def main():
             pygame.draw.circle(screen, color, to_screen(sh.pos), 20, 3)
             pygame.draw.line(screen, color, to_screen(sh.pos), to_screen(sh.pos + sh.speed), 3)
 
-        tt = font.render('turn {}/{}'.format(turn, len(outs)), 1, (192, 192, 192))
+        tt = font.render('turn {}/{}; sz = {}'.format(turn, len(outs), sz), 1, (192, 192, 192))
         # print(dir(tt.get_rect()))
         screen.blit(tt, (10, 5))
         pygame.display.update()

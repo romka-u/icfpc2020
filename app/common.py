@@ -1,3 +1,4 @@
+from itertools import starmap
 
 class Point(object):
     def __init__(self, *args):
@@ -23,12 +24,20 @@ class Point(object):
         return Point(self.x - other.x, self.y - other.y)
 
 
+class Move(object):
+    def __init__(self, move_type, arg):
+        self.move_type = move_type
+        self.arg = arg
+
+
 class Ship(object):
-    def __init__(self, pos, speed, player_type, ship_id):
+    def __init__(self, pos, speed, player_type, ship_id, skills, prev_moves):
         self.pos = pos
         self.speed = speed
         self.player_type = player_type
         self.ship_id = ship_id
+        self.skills = list(skills)
+        self.prev_moves = list(prev_moves)
 
 
 def parse_ship(ship_list):
@@ -37,7 +46,11 @@ def parse_ship(ship_list):
     speed = Point(ship_info[3])
     player_type = ship_info[0]
     ship_id = ship_info[1]
-    return Ship(pos, speed, player_type, ship_id)
+    skills = ship_info[4]
+
+    prev_moves = [] if ship_list[1] is None else list(starmap(Move, ship_list[1]))
+
+    return Ship(pos, speed, player_type, ship_id, skills, prev_moves)
 
 
 class GameState(object):
@@ -48,8 +61,8 @@ class GameState(object):
         try:
             self.ships = list(map(parse_ship, a[3][2]))
             self.my_type = a[2][1]
-        except:
-            print("Can not parse game state")
+        except Exception as e:
+            print("Can not parse game state:", e)
             pass
 
 
