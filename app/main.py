@@ -95,8 +95,8 @@ def signum(number):
 def make_commands_request(key, resp):
     my_coords = flatten(dem(resp))[3][2][0][0][2]
     print("my_coords =", my_coords)
-    dx = signum(my_coords[0])
-    dy = signum(my_coords[1])
+    dx = -signum(my_coords[0])
+    dy = -signum(my_coords[1])
     print("go", dx, dy)
     m = mod((4, (key, (((0, (0, ((dx, dy), None))), None), None))))
     #m = mod((4, (key, (None, None))))
