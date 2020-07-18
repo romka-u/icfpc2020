@@ -82,7 +82,7 @@ def make_join_request(key):
 
 def make_start_request(key, resp):
     # m = mod([3, [key, [None, None]]])
-    m = mod([3, [key, [[112, [64, [4, [16, None]]]], None]]])
+    m = mod([3, [key, [[326, [0, [10, [1, None]]]], None]]])
     return m
 
 def signum(number):
