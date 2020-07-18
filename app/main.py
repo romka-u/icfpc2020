@@ -36,6 +36,45 @@ def mod(x):
     print(x, type(x))
     fail
 
+
+def parse_int(s):
+    sz = 0
+    while s[0] == "1":
+        sz += 1
+        s = s[1:]
+    s = s[1:]
+    bits = 4 * sz
+    if bits == 0:
+        return 0, s
+    return int(s[:bits], 2), s[bits:]
+
+
+def demrec(s):
+    assert len(s) >= 2
+    if s[:2] == "01":
+        x, s = parse_int(s[2:])
+        return x, s
+
+    if s[:2] == "10":
+        x, s = parse_int(s[2:])
+        return -x, s
+
+    if s[:2] == "11":
+        s = s[2:]
+        x, s = demrec(s)
+        y, s = demrec(s)
+        return (x, y), s
+
+    if s[:2] == "00":
+        return None, s[2:]
+
+    assert False
+
+
+def dem(s):
+    return demrec(s)[0]
+
+
 def make_join_request(key):
     m = mod([2, [key, [None, None]]])
     return m
@@ -61,17 +100,18 @@ def send(x):
 def main():
     server_url = sys.argv[1]
     player_key = sys.argv[2]
+    print(dem("1101100010110111111111111111110000100010101001101011101100111100111110110111110001000110011001100"))
     print('ServerUrl: %s; PlayerKey: %s' % (server_url, player_key))
 
     join_request = make_join_request(player_key)
     print("jr:", join_request)
     game_response = send(join_request)
-    print("game_response:", game_response)
+    print("game_response:", game_response, dem(game_response))
 
     start_request = make_start_request(player_key, game_response)
     print("sr:", start_request)
     game_response = send(start_request)
-    print("game_response:", game_response)
+    print("game_response:", game_response, dem(game_response))
 
     sys.stdout.flush()
 
