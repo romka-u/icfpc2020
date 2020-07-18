@@ -80,8 +80,8 @@ def make_join_request(key):
     return m
 
 def make_start_request(key, resp):
-    m = mod([3, [key, [None, None]]])
-    # m = mod([3, [key, [[0, [0, [0, [0, None]]]], None]]])
+    # m = mod([3, [key, [None, None]]])
+    m = mod([3, [key, [[112, [64, [4, [16, None]]]], None]]])
     return m
 
 def make_commands_request(key, resp):
@@ -89,7 +89,10 @@ def make_commands_request(key, resp):
     return m
 
 def send(x):
-    res = requests.post(sys.argv[1] + "/aliens/send", data=x)
+    url = sys.argv[1] + "/aliens/send"
+    if sys.argv[1] == "local":
+        url = "https://icfpc2020-api.testkontur.ru/aliens/send?apiKey=1242ae59bc9f4385b3c3eaa60764a09c"
+    res = requests.post(url, data=x)
     if res.status_code != 200:
         print('Unexpected server response:')
         print('HTTP code:', res.status_code)
