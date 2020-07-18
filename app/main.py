@@ -88,7 +88,7 @@ def make_commands_request(key, resp):
     return m
 
 def send(x):
-    res = requests.post(sys.argv[1], data=x)
+    res = requests.post(sys.argv[1] + "/aliens/send", data=x)
     if res.status_code != 200:
         print('Unexpected server response:')
         print('HTTP code:', res.status_code)
@@ -117,9 +117,9 @@ def main():
 
     while True:
         commands_request = make_commands_request(player_key, game_response)
-        # print("cr:", commands_request)
+        print("cr:", commands_request, dem(commands_request))
         game_response = send(commands_request)
-        # print("game_response:", game_response)
+        print("game_response:", game_response, dem(game_response))
 
 
 if __name__ == '__main__':
