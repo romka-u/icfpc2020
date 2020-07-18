@@ -1,10 +1,17 @@
 /**
  *    author:  tourist
- *    created: 18.07.2020 12:34:33       
+ *    created: 18.07.2020 12:34:33
 **/
 #undef _GLIBCXX_DEBUG
 
-#include <bits/stdc++.h>
+#include <vector>
+#include <string>
+#include <utility>
+#include <iostream>
+#include <tuple>
+#include <map>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
