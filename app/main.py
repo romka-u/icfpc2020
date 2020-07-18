@@ -29,19 +29,23 @@ def mod(x):
         return "00"
     if isinstance(x, int) or isinstance(x, str):
         return mod_num(int(x))
-    if isinstance(x, list):
+    if isinstance(x, list) or isinstance(x, tuple):
         assert(len(x) == 2)
         return "11" + mod(x[0]) + mod(x[1])
 
     print(x, type(x))
     fail
 
-def makeJoinRequest(key):
+def make_join_request(key):
     m = mod([2, [key, None]])
     return m
 
-def makeStartRequest(key, resp):
+def make_start_request(key, resp):
     m = mod([3, [key, [[5, [0, [0, [0, None]]]], None]]])
+    return m
+
+def make_commands_request(key, resp):
+    m = mod((4, (key, (None, None))))
     return m
 
 def send(x):
@@ -49,7 +53,7 @@ def send(x):
     if res.status_code != 200:
         print('Unexpected server response:')
         print('HTTP code:', res.status_code)
-        print('Response body:', res.text)
+        print('_response body:', res.text)
         exit(2)
     # print('Server response:', res.text)
     return res.text
@@ -59,15 +63,21 @@ def main():
     player_key = sys.argv[2]
     print('ServerUrl: %s; PlayerKey: %s' % (server_url, player_key))
 
-    joinRequest = makeJoinRequest(player_key)
-    print("jr:", joinRequest)
-    gameResponse = send(joinRequest)
-    print("gameResponse:", gameResponse)
+    join_request = make_join_request(player_key)
+    print("jr:", join_request)
+    game_response = send(join_request)
+    print("game_response:", game_response)
 
-    startRequest = makeStartRequest(playerKey, gameResponse)
-    print("sr:", startRequest)
-    startResponse = send(startRequest)
-    print("startResponse:", startResponse)
+    start_request = make_start_request(player_key, game_response)
+    print("sr:", start_request)
+    game_response = send(start_request)
+    print("game_response:", game_response)
+
+    while True:
+        commands_request = make_commands_request(player_key, game_response)
+        print("cr:", commands_request)
+        game_response = send(commands_request)
+        print("game_response:", game_response)
 
 
 if __name__ == '__main__':
