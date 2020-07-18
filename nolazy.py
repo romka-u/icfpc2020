@@ -42,7 +42,7 @@ class Cons(object):
     def __call__(self, x):
         if len(self.val) == 2:
             return Ap(Ap(x, self.val[0]), self.val[1])()
-        return Cons(self.val + [x() if isinstance(x, Ap) else x])
+        return Cons(self.val + [x])
 
     def __repr__(self):
         return str(self.val)
@@ -114,6 +114,16 @@ class Car(object):
     def __call__(self, x):
         if len(self.val) == 1:
             return self.val[0]()
+        if isinstance(x, Ap):
+            x = x()
+        if not isinstance(x, Cons):
+            print(x)
+            print(type(x))
+        assert isinstance(x, Cons)
+        self.val += x.val
+        if len(self.val) == 2:
+            return self.val[0]()
+
         return Car(self.val + [x])
 
     def __repr__(self):
@@ -127,6 +137,15 @@ class Cdr(object):
     def __call__(self, x):
         if len(self.val) == 1:
             return x()
+        if isinstance(x, Ap):
+            x = x()
+        if not isinstance(x, Cons):
+            print(x)
+            print(type(x))
+        assert isinstance(x, Cons)
+        self.val += x.val
+        if len(self.val) == 2:
+            return self.val[1]()
         return Cdr(self.val + [x])
 
     def __repr__(self):
