@@ -120,13 +120,18 @@ class Move(object):
 
 
 class Ship(object):
-    def __init__(self, pos, speed, player_type, ship_id, skills, prev_moves):
+    def __init__(self, pos, speed, player_type, ship_id, skills, prev_moves, tiredness, tiredness_limit):
         self.pos = pos
         self.speed = speed
         self.player_type = player_type
         self.ship_id = ship_id
-        self.skills = list(skills)
+        self.energy = skills[0]
+        self.shoot_energy = skills[1]
+        self.rest = skills[2]
+        self.health = skills[3]
         self.prev_moves = list(prev_moves)
+        self.tiredness = tiredness
+        self.tiredness_limit = tiredness_limit
 
 
 def parse_ship(ship_list):
@@ -136,10 +141,12 @@ def parse_ship(ship_list):
     player_type = ship_info[0]
     ship_id = ship_info[1]
     skills = ship_info[4]
+    tiredness = ship_info[5]
+    tiredness_limit=  ship_info[6]
 
     prev_moves = [] if ship_list[1] is None else list(map(Move, ship_list[1]))
 
-    return Ship(pos, speed, player_type, ship_id, skills, prev_moves)
+    return Ship(pos, speed, player_type, ship_id, skills, prev_moves, tiredness, tiredness_limit)
 
 
 class GameState(object):

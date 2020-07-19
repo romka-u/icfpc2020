@@ -19,6 +19,7 @@ screen = pygame.display.set_mode([w, h])
 print("Loading font...", end="")
 sys.stdout.flush()
 font = pygame.font.SysFont("verdanattf", 18)
+font_ship_info = pygame.font.SysFont("verdanattf", 16)
 print("done")
 
 
@@ -33,13 +34,16 @@ def parse_line(line):
         print("WARNING: Can't parse line - ", line, e)
         return [0]
 
+
 def to_screen(pos):
     return (w // 2 + sz * pos.x, h // 2 + sz * pos.y)
+
 
 def add_input(input_queue):
     while True:
         line = sys.stdin.readline()
         input_queue.put(line)
+
 
 def draw_centered_rect(color, size, width):
     top_left = to_screen(Point(-size, -size))
@@ -118,23 +122,41 @@ def main():
             print("got  <- {}".format(ins[turn]))
             prev_turn = turn
 
+        last_text_pos_y = 50
         for sh in gs.ships:
             if sh.player_type == gs.my_type:
                 color = (0, 192, 0)
             else:
                 color = (192, 0, 0)
 
-            pygame.draw.circle(screen, color, to_screen(sh.pos), 20, 3)
-            pygame.draw.line(screen, color, to_screen(sh.pos), to_screen(sh.pos + sh.speed), 3)
+            screen_pos = to_screen(sh.pos)
+            pygame.draw.circle(screen, color, screen_pos, 20, 3)
+            pygame.draw.line(screen, color, screen_pos, to_screen(sh.pos + sh.speed), 3)
+            screen.blit(font.render(str(sh.ship_id), 1, color), (screen_pos[0] - 35, screen_pos[1] - 12))
+
+            text_info = font_ship_info.render(
+                'ship (id = {}, energy = {}, shoot_energy = {}, rest = {}, health = {}, tired = {}/{})'.
+                    format(sh.ship_id,
+                           sh.energy,
+                           sh.shoot_energy,
+                           sh.rest,
+                           sh.health,
+                           sh.tiredness,
+                           sh.tiredness_limit,
+                           ), 1,
+                color)
+            screen.blit(text_info, (10, last_text_pos_y))
+            last_text_pos_y += 30
 
         border_color = (200, 200, 200)
         draw_centered_rect(border_color, gs.world_size, 2)
-        draw_centered_rect(border_color, gs.planet_size, 0) # fill
+        draw_centered_rect(border_color, gs.planet_size, 0)  # fill
 
         tt = font.render('turn {}/{}; sz = {}; finished = {}'.format(turn, total_turns, sz, gs.game_finished),
                          1, (192, 192, 192))
         # print(dir(tt.get_rect()))
         screen.blit(tt, (10, 5))
+
         pygame.display.update()
 
 
