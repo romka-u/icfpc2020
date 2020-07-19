@@ -28,16 +28,21 @@ def main():
     join_local_response = send(cretea_join_local_game_request(attacker_key))
 
     print('run attack process')
-    with open('tmp/attacker.log', 'wb') as out:
+    attacker_log = 'tmp/attacker.log'
+    with open(attacker_log, 'wb') as out:
         attacker_process = subprocess.Popen(['python3', 'main.py', 'local', attacker_key], stdout=out)
 
     print('run defender process')
     with open('tmp/defender.log', 'wb') as out:
         defender_process = subprocess.Popen(['python3', 'main.py', 'local', defender_key], stdout=out)
 
-    print('waiting till end, logs are inside tmp/')
-    attacker_process.wait()
-    defender_process.wait()
+    viewer_cmd = 'tail -F -c +1 ' + attacker_log + ' | python3 logviewer.py'
+    viewer_process = subprocess.Popen(viewer_cmd, shell=True)
+    viewer_process.wait()
+
+    print('viewer is closed, killing players')
+    attacker_process.kill()
+    defender_process.kill()
     print('game is finished')
 
 

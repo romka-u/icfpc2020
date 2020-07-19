@@ -18,8 +18,7 @@ def signum(number):
         return -1
     return 0
 
-def make_commands_request(key, resp):
-    game_state = GameState(flatten(dem(resp)))
+def make_commands_request(key, game_state):
     print(game_state.my_type)
     ops = None
     for ship in game_state.ships:
@@ -59,7 +58,10 @@ def main():
     sys.stdout.flush()
 
     while True:
-        commands_request = make_commands_request(player_key, game_response)
+        game_state = GameState(flatten(dem(game_response)))
+        if game_state.game_finished:
+            break
+        commands_request = make_commands_request(player_key, game_state)
         print("->", dem(commands_request))
         game_response = send(commands_request)
         print("<-", dem(game_response))

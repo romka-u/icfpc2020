@@ -143,12 +143,16 @@ class GameState(object):
     def __init__(self, a):
         self.ships = []
         self.my_type = -1
+        self.game_finished = False
 
         try:
-            self.ships = list(map(parse_ship, a[3][2]))
-            self.my_type = a[2][1]
+            if a[0] == 0:
+                self.game_finished = True
+            else:
+                self.ships = list(map(parse_ship, a[3][2]))
+                self.my_type = a[2][1]
         except Exception as e:
-            print("Can not parse game state:", e)
+            print("Can not parse game state:", e, a)
             pass
 
 
