@@ -159,7 +159,7 @@ def parse_ship(ship_list):
     ship_id = ship_info[1]
     skills = ship_info[4]
     tiredness = ship_info[5]
-    tiredness_limit=  ship_info[6]
+    tiredness_limit = ship_info[6]
 
     prev_moves = [] if ship_list[1] is None else list(map(Move, ship_list[1]))
 
@@ -171,8 +171,8 @@ class GameState(object):
         self.ships = []
         self.my_type = -1
         self.game_finished = False
-        self.world_size = -1
-        self.planet_size = -1
+        self.world_size = 128
+        self.planet_size = 16
 
         try:
             if a[0] == 0 or len(a) < 4 or a[3][2] is None:

@@ -37,7 +37,7 @@ def get_gravity(ship_pos):
     if abs(ship_pos.y) >= abs(ship_pos.x):
         gravity.y = -signum(ship_pos.y)
     return gravity
-  
+
 def make_commands_request(key, game_state):
     print(game_state.my_type)
     ops = None
@@ -83,11 +83,11 @@ def make_commands_request(key, game_state):
               if dist < min_dist:
                 min_dist = dist
                 min_turn = i
-              if max(abs(my_pos.x), abs(my_pos.y)) <= 16: # !! change to real constant
+              if max(abs(my_pos.x), abs(my_pos.y)) <= game_state.planet_size:
                 min_dist = 1000 if game_state.my_type == 0 else -1000
                 min_turn = -i
                 break
-              if max(abs(my_pos.x), abs(my_pos.y)) > 128: # !! change to real constant
+              if max(abs(my_pos.x), abs(my_pos.y)) > game_state.world_size:
                 min_dist = 1000 if game_state.my_type == 0 else -1000
                 min_turn = -i
                 break
@@ -113,7 +113,7 @@ def make_commands_request(key, game_state):
 
         if best_distance == (0, 0) and game_state.my_type == 0:
           ops = ((1, (ship.ship_id, None)), ops)
-        
+
         # uncomment, when you think it is useful
         # if game_state.my_type == ATTACKER_ID and another_ship is not None:
         #     ops = (make_shoot_request(ship, another_ship, 1), ops)
