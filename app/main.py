@@ -73,7 +73,13 @@ def predict_action(last_action):
         if cur_prediction is not None:
             options[cur_prediction] = options[cur_prediction] + 1
     print('predictions: ', options)
-    return last_action
+    best_prediction = last_action
+    best_num = 1
+    for k, v in options.items():
+        if v > best_num:
+            best_prediction = k
+            best_num = v
+    return best_prediction
 
 
 def make_commands_request(key, game_state):
