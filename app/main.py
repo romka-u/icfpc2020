@@ -167,7 +167,8 @@ def make_commands_request(key, game_state):
         print("go", dx, dy)
         ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
 
-        if best_distance[1] == 0 and best_distance[2] <= 1 and game_state.my_type == 0 and len(opp_ships) == 1:
+        # TODO: THINK ABOUT DISTANCE!
+        if best_distance[1] == 0 and best_distance[2] <= 3 and game_state.my_type == ATTACKER_ID and len(opp_ships) == 1:
           print("explode!")
           ops = ((1, (ship.ship_id, None)), ops)
 
