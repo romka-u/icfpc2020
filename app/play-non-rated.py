@@ -6,6 +6,8 @@ import time
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--tournament", required=True)
+    parser.add_argument("-a", "--attack", action="store_true")
+    parser.add_argument("-d", "--defend", action="store_true")
     return parser.parse_args()
 
 def get_submissions(t):
@@ -57,8 +59,10 @@ def main():
 
     for id in ids:
         for i in range(n):
-            create_game(my_sub[0], submissions[id][2])
-            create_game(submissions[id][2], my_sub[0])
+            if args.attack:
+                create_game(my_sub[0], submissions[id][2])
+            if args.defend:
+                create_game(submissions[id][2], my_sub[0])
 
 
 if __name__ == "__main__":
