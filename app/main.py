@@ -1,5 +1,7 @@
 import requests
 import sys
+import random
+import time
 import itertools
 from common import *
 
@@ -8,15 +10,22 @@ def make_join_request(key):
     return m
 
 def make_start_request(key, resp):
-    # m = mod([3, [key, [None, None]]])
     max_score = flatten(dem(resp))[2][2][0]
     if max_score == 448:
         characteristics = [326, [0, [10, [1, None]]]]
     elif max_score == 512:
         characteristics = [326, [16, [10, [1, None]]]]
     else:
-        #TODO: FIX IT PLEASE!
-        characteristics = [1, [1, [1, [1, None]]]]
+        skills = [0] * 4
+        random.seed(time.time())
+        while skills[0] + skills[1] * 4 + skills[2] * 12 + skills[3] * 2 < max_score - 12:
+            r = random.randint(0, 3)
+            skills[r] += 1
+
+        skills[0] += max_score - (skills[0] + skills[1] * 4 + skills[2] * 12 + skills[3] * 2)
+        characteristics = [skills[0], [skills[1], [skills[2], [skills[3], None]]]]
+        print("my skills:", skills)
+
     m = mod([3, [key, [characteristics, None]]])
     return m
 
