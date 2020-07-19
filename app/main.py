@@ -47,15 +47,10 @@ def make_commands_request(key, game_state):
 
     another_ship = opp_ships[0]
     print('his_pos', another_ship.pos)
-    his_action = Point(0, 0)
-    for his_move in another_ship.prev_moves:
-      if his_move.move_type == 0:
-        his_action = Point(0, 0) - his_move.pos()
+    his_action = Point(0, 0) - another_ship.get_last_move()
     print('his_action', his_action)
-    moves = []
-    for dx in range(-1, 2):
-      for dy in range(-1, 2):
-        moves.append(Point(dx, dy))
+    moves = [Point(dx, dy) for dx in range(-1, 2) for dy in range(-1, 2)]
+
     for ship in game_state.ships:
       if ship.player_type == game_state.my_type:
         print("ship coords =", ship.pos.aslist())
@@ -63,11 +58,11 @@ def make_commands_request(key, game_state):
         best_distance = (787788789, -1)
         best_sequence = []
         for reps in range(2, 4):
-          for sequence in itertools.product(moves, repeat = reps):
-            my_pos = Point(ship.pos.x, ship.pos.y)
-            his_pos = Point(another_ship.pos.x, another_ship.pos.y)
-            my_speed = Point(ship.speed.x, ship.speed.y)
-            his_speed = Point(another_ship.speed.x, another_ship.speed.y)
+          for sequence in itertools.product(moves, repeat=reps):
+            my_pos = ship.pos.clone()
+            his_pos = another_ship.pos.clone()
+            my_speed = ship.speed.clone()
+            his_speed = another_ship.speed.clone()
             cmin = (787788, None, None)
             for i in range(30):
               if i < len(sequence):

@@ -106,6 +106,9 @@ class Point(object):
     def aslist(self):
         return (self.x, self.y)
 
+    def clone(self):
+        return Point(self.x, self.y)
+
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
 
@@ -149,6 +152,13 @@ class Ship(object):
         self.prev_moves = list(prev_moves)
         self.tiredness = tiredness
         self.tiredness_limit = tiredness_limit
+
+    def get_last_move(self):
+        for mv in self.prev_moves:
+            if mv.move_type == 0:
+                return mv.pos()
+
+        return Point(0, 0)
 
 
 def parse_ship(ship_list):
