@@ -41,10 +41,11 @@ def get_gravity(ship_pos):
 def make_commands_request(key, game_state):
     print(game_state.my_type)
     ops = None
-    another_ship = None
-    for ship in game_state.ships:
-        if ship.player_type != game_state.my_type:
-            another_ship = ship
+    opp_ships = game_state.get_opp_ships()
+    if not opp_ships:
+        return mod((4, (key, (ops, None))))
+
+    another_ship = opp_ships[0]
     print('his_pos', another_ship.pos)
     his_action = Point(0, 0)
     for his_move in another_ship.prev_moves:
@@ -108,7 +109,7 @@ def make_commands_request(key, game_state):
         print("go", dx, dy)
         ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
 
-        if best_distance[1] == 0 and best_distance[2] <= 1 and game_state.my_type == 0:
+        if best_distance[1] == 0 and best_distance[2] <= 1 and game_state.my_type == 0 and len(opp_ships) == 1:
           print("explode!")
           ops = ((1, (ship.ship_id, None)), ops)
 

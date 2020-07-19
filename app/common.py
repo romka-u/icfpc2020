@@ -191,6 +191,13 @@ class GameState(object):
             print("Can not parse game state:", e, a)
             pass
 
+    def get_opp_ships(self):
+        res = []
+        for sh in self.ships:
+            if sh.player_type != self.my_type:
+                res.append(sh)
+        return res
+
 
 def flatten(a):
     if not isinstance(a, list) and not isinstance(a, tuple):
