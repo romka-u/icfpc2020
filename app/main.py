@@ -61,44 +61,47 @@ def make_commands_request(key, game_state):
         print('my speed', ship.speed.aslist())
         best_distance = (787788789, -1)
         best_sequence = []
-        for sequence in itertools.product(moves, repeat = 2):
-          my_pos = Point(ship.pos.x, ship.pos.y)
-          his_pos = Point(another_ship.pos.x, another_ship.pos.y)
-          my_speed = Point(ship.speed.x, ship.speed.y)
-          his_speed = Point(another_ship.speed.x, another_ship.speed.y)
-          min_dist = 787788
-          min_turn = -1
-          for i in range(30):
-            if i < len(sequence):
-              my_speed += sequence[i]
-            my_speed += get_gravity(my_pos)
-            my_pos += my_speed
-            his_speed += his_action
-            his_speed += get_gravity(his_pos)
-            his_pos += his_speed
-            dist = abs(my_pos.x - his_pos.x) + abs(my_pos.y - his_pos.y)
-            #if i < 10:
-            #  print('iter', sequence, i, my_pos.aslist(), my_speed.aslist(), his_pos.aslist(), his_speed.aslist())
-            if dist < min_dist:
-              min_dist = dist
-              min_turn = i
-            if max(abs(my_pos.x), abs(my_pos.y)) <= 16: # !! change to real constant
-              min_dist = 1000 if game_state.my_type == 0 else -1000
-              min_turn = -i
-              break
-            if max(abs(my_pos.x), abs(my_pos.y)) > 128: # !! change to real constant
-              min_dist = 1000 if game_state.my_type == 0 else -1000
-              min_turn = -i
-              break
-            #if max(abs(his_pos.x), abs(his_pos.y)) <= 16: # !! change to real constant
-            #  break
-          if game_state.my_type == 1:
-            min_dist = -min_dist
+        for reps in range(2, 4):
+          for sequence in itertools.product(moves, repeat = reps):
+            my_pos = Point(ship.pos.x, ship.pos.y)
+            his_pos = Point(another_ship.pos.x, another_ship.pos.y)
+            my_speed = Point(ship.speed.x, ship.speed.y)
+            his_speed = Point(another_ship.speed.x, another_ship.speed.y)
+            min_dist = 787788
+            min_turn = -1
+            for i in range(30):
+              if i < len(sequence):
+                my_speed += sequence[i]
+              my_speed += get_gravity(my_pos)
+              my_pos += my_speed
+              his_speed += his_action
+              his_speed += get_gravity(his_pos)
+              his_pos += his_speed
+              dist = abs(my_pos.x - his_pos.x) + abs(my_pos.y - his_pos.y)
+              #if i < 10:
+              #  print('iter', sequence, i, my_pos.aslist(), my_speed.aslist(), his_pos.aslist(), his_speed.aslist())
+              if dist < min_dist:
+                min_dist = dist
+                min_turn = i
+              if max(abs(my_pos.x), abs(my_pos.y)) <= 16: # !! change to real constant
+                min_dist = 1000 if game_state.my_type == 0 else -1000
+                min_turn = -i
+                break
+              if max(abs(my_pos.x), abs(my_pos.y)) > 128: # !! change to real constant
+                min_dist = 1000 if game_state.my_type == 0 else -1000
+                min_turn = -i
+                break
+              #if max(abs(his_pos.x), abs(his_pos.y)) <= 16: # !! change to real constant
+              #  break
+            if game_state.my_type == 1:
+              min_dist = -min_dist
+            if (min_dist, min_turn) < best_distance:
+              best_distance = (min_dist, min_turn)
+              best_sequence = sequence
+          if best_distance[0] != 1000:
+            break
           #print(sequence)
           #print(min_dist)
-          if (min_dist, min_turn) < best_distance:
-            best_distance = (min_dist, min_turn)
-            best_sequence = sequence
         #print('-- --')
         print('dist', best_distance)
         print(best_sequence)
