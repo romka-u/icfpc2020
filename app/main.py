@@ -3,18 +3,22 @@ import sys
 import random
 import time
 import itertools
+import math
+from collections import defaultdict
 from common import *
 
 def make_join_request(key):
     m = mod([2, [key, [None, None]]])
     return m
 
+max_shoot_energy = 32
+
 def make_start_request(key, resp):
     max_score = flatten(dem(resp))[2][2][0]
     if max_score == 448:
         characteristics = [326, [0, [10, [1, None]]]]
     elif max_score == 512:
-        characteristics = [326, [16, [10, [1, None]]]]
+        characteristics = [max_score - max_shoot_energy * 4 - 12 * 10 - 2, [max_shoot_energy, [10, [1, None]]]]
     else:
         skills = [0] * 4
         random.seed(time.time())
@@ -36,8 +40,8 @@ def signum(number):
         return -1
     return 0
 
-def make_shoot_request(my_ship, another_ship, power):
-    return 2, (my_ship.ship_id, ((another_ship.pos.x, another_ship.pos.y), (power, None)))
+def make_shoot_request(my_ship, another_ship_pos, power):
+    return 2, (my_ship.ship_id, ((another_ship_pos.x, another_ship_pos.y), (power, None)))
 
 def get_gravity(ship_pos):
     gravity = Point(0, 0)
@@ -46,6 +50,40 @@ def get_gravity(ship_pos):
     if abs(ship_pos.y) >= abs(ship_pos.x):
         gravity.y = -signum(ship_pos.y)
     return gravity
+
+def calc_real_demage(use_energy, position):
+    x = abs(position.x)
+    y = abs(position.y)
+    ratio = abs(2.0 * min(x, y) / max(x, y) - 1)
+    return max(0, int(math.ceil((use_energy * 3 + 1) * ratio - max(x, y))))
+
+all_his_actions = []
+
+def apply_transform(p, xmul, ymul, swap_coords):
+    nx = p.x * xmul
+    ny = p.y * ymul
+    if swap_coords == 1:
+        nx, ny = ny, nx
+    return Point(nx, ny)
+
+def predict_action(last_action):
+    options = defaultdict(lambda: 0)
+    options[last_action] = 1
+    for i in range(len(all_his_actions) - 1):
+        was_action = all_his_actions[i]
+        next_action = all_his_actions[i + 1]
+        cur_prediction = None
+        for xmul in {-1, 1}:
+            for ymul in {-1, 1}:
+                for swap_coords in {0, 1}:
+                    transformed_action = apply_transform(was_action, xmul, ymul, swap_coords)
+                    if transformed_action == last_action:
+                        cur_prediction = apply_transform(next_action, xmul, ymul, swap_coords)
+        if cur_prediction is not None:
+            options[cur_prediction] = options[cur_prediction] + 1
+    print('predictions: ', options)
+    return last_action
+
 
 def make_commands_request(key, game_state):
     print(game_state.my_type)
@@ -58,8 +96,8 @@ def make_commands_request(key, game_state):
     print('his_pos', another_ship.pos)
     his_action = Point(0, 0) - another_ship.get_last_move()
     print('his_action', his_action)
+    all_his_actions.append(his_action)
     moves = [Point(dx, dy) for dx in range(-1, 2) for dy in range(-1, 2)]
-
     for ship in game_state.ships:
       if ship.player_type == game_state.my_type:
         print("ship coords =", ship.pos.aslist())
@@ -115,6 +153,27 @@ def make_commands_request(key, game_state):
         if best_distance[1] == 0 and best_distance[2] <= 1 and game_state.my_type == ATTACKER_ID and len(opp_ships) == 1:
           print("explode!")
           ops = ((1, (ship.ship_id, None)), ops)
+
+        if game_state.my_type == ATTACKER_ID:
+            if another_ship is not None:
+                his_pos = Point(another_ship.pos.x, another_ship.pos.y)
+                his_speed = Point(another_ship.speed.x, another_ship.speed.y)
+                his_speed += predict_action(his_action)
+                his_speed += get_gravity(his_pos)
+                his_pos += his_speed
+
+                my_pos = Point(ship.pos.x, ship.pos.y)
+                my_speed = Point(ship.speed.x, ship.speed.y)
+                my_speed += Point(-dx, -dy) # very bad '-' :(
+                my_speed += get_gravity(my_pos)
+                my_pos += my_speed
+
+                diff_to_him = his_pos - my_pos
+                use_demage = min(max_shoot_energy, ship.tiredness_limit - ship.tiredness) # TODO: change it!
+                real_demage = calc_real_demage(use_demage, diff_to_him)
+                if real_demage > use_demage and use_demage > 0: # TODO: change condition!
+                    print('shoot, use {}, expected demage {}'.format(use_demage, real_demage))
+                    ops = (make_shoot_request(ship, his_pos, use_demage), ops)
 
         # uncomment, when you think it is useful
         # if game_state.my_type == ATTACKER_ID and another_ship is not None:

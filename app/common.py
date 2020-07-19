@@ -118,6 +118,12 @@ class Point(object):
     def __repr__(self):
         return str(self.aslist())
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __hash__(self):
+        return hash((self.x, self.y))
+
 
 class Move(object):
     def __init__(self, args):
