@@ -158,7 +158,7 @@ def make_commands_request(key, game_state):
         dx = -best_sequence[0].x
         dy = -best_sequence[0].y
         # TODO: change random?
-        if can_skip_accelerate and (ship.tiredness > 10 or random.randint(0, 4) != 0):
+        if can_skip_accelerate and (ship.tiredness > 10 or (random.randint(0, 4) != 0 and game_state.my_type == ATTACKER_ID)):
             dx = 0
             dy = 0
             print("skip accelerate at this point, because too tired", ship.tiredness)
