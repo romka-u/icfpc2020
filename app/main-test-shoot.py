@@ -10,9 +10,9 @@ def make_start_request(key, resp):
     # m = mod([3, [key, [None, None]]])
     max_score = flatten(dem(resp))[2][2][0]
     if max_score == 448:
-        characteristics = [326, [0, [10, [1, None]]]]
+        characteristics = [300, [20, [10, [1, None]]]]
     elif max_score == 512:
-        characteristics = [326, [10, [10, [1, None]]]]
+        characteristics = [300, [20, [10, [1, None]]]]
     else:
         #TODO: FIX IT PLEASE!
         characteristics = [1, [1, [1, [1, None]]]]
@@ -29,7 +29,7 @@ def signum(number):
 def make_shoot_request(my_ship, x, y, power):
     return 2, (my_ship.ship_id, ((x, y), (power, None)))
 
-move_id = 5
+move_id = -1
 
 def make_commands_request(key, game_state):
     global move_id
@@ -55,16 +55,12 @@ def make_commands_request(key, game_state):
         print("go", dx, dy)
         ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
         # uncomment, when you think it is useful
-        move_id = move_id + 1
-        N = 5
-        shoot_dx = 1 # -move_id #move_id // N - N // 2
-        shoot_dy = move_id #move_id % N - N // 2
-        # SIZE = 3
-        # shoot_dx *= SIZE
-        # shoot_dy *= SIZE
-        print('shoot: ', shoot_dx, shoot_dy)
-        if game_state.my_type == ATTACKER_ID:
-            ops = (make_shoot_request(ship, ship.pos.x + shoot_dx, ship.pos.y + shoot_dy, 10), ops)
+        if game_state.my_type == ATTACKER_ID and ship.tiredness_limit - ship.tiredness >= 20:
+            move_id = move_id + 1
+            shoot_dx = int(sys.argv[3]) # -move_id #move_id // N - N // 2
+            shoot_dy = move_id #move_id % N - N // 2
+            print('shoot: ', shoot_dx, shoot_dy)
+            ops = (make_shoot_request(ship, ship.pos.x + shoot_dx, ship.pos.y + shoot_dy, 20), ops)
     m = mod((4, (key, (ops, None))))
     return m
 
@@ -90,6 +86,8 @@ def main():
     print("<-", dem(game_response))
     sys.stdout.flush()
 
+    ft = open("log.txt", "w")
+
     while True:
         game_state = GameState(flatten(dem(game_response)))
         if game_state.game_finished:
@@ -97,6 +95,19 @@ def main():
         commands_request = make_commands_request(player_key, game_state)
         print("->", dem(commands_request))
         game_response = send(commands_request)
+        gr = GameState(flatten(dem(game_response)))
+        for sh in gr.ships:
+            if sh.player_type == gr.my_type:
+                flag = False
+                for m in sh.prev_moves:
+                    if m.move_type == 0:
+                        flag = True
+
+                for m in sh.prev_moves:
+                    if m.move_type == 2:
+                        delta = m.pos() - sh.pos
+                        ft.write("{} {} {}\n".format(delta.x, delta.y, m.args[2]))
+                        ft.flush()
         print("<-", dem(game_response))
         sys.stdout.flush()
 

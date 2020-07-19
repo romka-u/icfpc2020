@@ -4,7 +4,7 @@ import pygame
 import time
 import queue
 import threading
-from common import flatten, GameState, Point
+from common import flatten, GameState, Point, ATTACKER_ID, DEFENDER_ID
 
 # print(flatten((None, (1559918512028036058, ((112, (None, (4, (16, None)))), None)))))
 
@@ -19,6 +19,7 @@ screen = pygame.display.set_mode([w, h])
 print("Loading font...", end="")
 sys.stdout.flush()
 font = pygame.font.SysFont("verdanattf", 18)
+small_font = pygame.font.SysFont("verdanattf", 10)
 font_ship_info = pygame.font.SysFont("verdanattf", 16)
 print("done")
 
@@ -130,14 +131,16 @@ def main():
                 color = (192, 0, 0)
 
             screen_pos = to_screen(sh.pos)
-            if sh.player_type == 1:
+            if sh.player_type == DEFENDER_ID:
                 pygame.draw.circle(screen, color, screen_pos, 15, 2)
             else:
                 pygame.draw.rect(screen, color, (screen_pos[0] - 15, screen_pos[1] - 15, 30, 30), 2)
             pygame.draw.line(screen, color, screen_pos, to_screen(sh.pos + sh.speed), 2)
-            screen.blit(font.render(str(sh.ship_id), 1, color), (screen_pos[0] - 35, screen_pos[1] - 12))
 
-            text = 'ship (id:{}, energy:{}, shoot_energy:{}, rest:{}, health:{}, tired:{}/{})'.format(
+            screen.blit(font.render(str(sh.ship_id), 1, color), (screen_pos[0] - 35, screen_pos[1] - 12))
+            screen.blit(small_font.render("{}+{}".format(sh.pos, sh.speed).replace(" ", ""), 1, color), (screen_pos[0] + 20, screen_pos[1] - 6))
+
+            text = '(id:{}, energy:{}, shoot_energy:{}, rest:{}, health:{}, tired:{}/{})'.format(
                 sh.ship_id,
                 sh.energy,
                 sh.shoot_energy,
