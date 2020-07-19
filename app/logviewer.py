@@ -33,6 +33,13 @@ def add_input(input_queue):
         line = sys.stdin.readline()
         input_queue.put(line)
 
+def draw_centered_rect(color, size, width):
+    top_left = to_screen(Point(-size, -size))
+    bottom_right = to_screen(Point(size, size))
+    rect = (top_left[0], top_left[1], bottom_right[0] - top_left[0], bottom_right[1] - top_left[1])
+    pygame.draw.rect(screen, color, rect, width=width)
+
+
 def main():
     input_queue = queue.Queue()
 
@@ -93,6 +100,10 @@ def main():
 
             pygame.draw.circle(screen, color, to_screen(sh.pos), 20, 3)
             pygame.draw.line(screen, color, to_screen(sh.pos), to_screen(sh.pos + sh.speed), 3)
+
+        border_color = (200, 200, 200)
+        draw_centered_rect(border_color, gs.world_size, 2)
+        draw_centered_rect(border_color, gs.planet_size, 0) # fill
 
         tt = font.render('turn {}/{}; sz = {}; finished = {}'.format(turn, total_turns, sz, gs.game_finished),
                          1, (192, 192, 192))

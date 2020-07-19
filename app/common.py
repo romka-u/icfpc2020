@@ -144,6 +144,8 @@ class GameState(object):
         self.ships = []
         self.my_type = -1
         self.game_finished = False
+        self.world_size = -1
+        self.planet_size = -1
 
         try:
             if a[0] == 0:
@@ -151,6 +153,8 @@ class GameState(object):
             else:
                 self.ships = list(map(parse_ship, a[3][2]))
                 self.my_type = a[2][1]
+                self.world_size = a[2][3][1]
+                self.planet_size = a[2][3][0] # not sure?
         except Exception as e:
             print("Can not parse game state:", e, a)
             pass
