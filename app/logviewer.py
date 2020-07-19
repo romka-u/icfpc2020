@@ -21,13 +21,14 @@ print("done")
 
 
 def parse_line(line):
+    line = line.replace("nil", "None")
     try:
         a = eval(line)
         f = flatten(a)
         # print(a, "--f->", f)
         return f
     except Exception as e:
-        print("WARNING: Can't parse line - ", line)
+        print("WARNING: Can't parse line - ", line, e)
         return [0]
 
 def to_screen(pos):

@@ -153,8 +153,12 @@ class GameState(object):
             else:
                 self.ships = list(map(parse_ship, a[3][2]))
                 self.my_type = a[2][1]
-                self.world_size = a[2][3][1]
-                self.planet_size = a[2][3][0] # not sure?
+                try:
+                    self.world_size = a[2][3][1]
+                    self.planet_size = a[2][3][0] # not sure?
+                except:
+                    # no sizes in tutorials, but who cares
+                    pass
         except Exception as e:
             print("Can not parse game state:", e, a)
             pass
