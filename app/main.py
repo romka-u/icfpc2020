@@ -170,7 +170,10 @@ def make_commands_request(key, game_state):
           ops = ((1, (ship.ship_id, None)), ops)
 
         if game_state.my_type == ATTACKER_ID:
-            if another_ship is not None:
+            best_shot = (-1, None)
+            for another_ship in game_state.ships:
+                if another_ship.player_type == game_state.my_type:
+                    continue
                 his_pos = Point(another_ship.pos.x, another_ship.pos.y)
                 his_speed = Point(another_ship.speed.x, another_ship.speed.y)
                 prediction = predict_action(his_action)
@@ -189,9 +192,12 @@ def make_commands_request(key, game_state):
                 diff_to_him = his_pos - my_pos
                 use_demage = min(max_shoot_energy, ship.tiredness_limit - ship.tiredness) # TODO: change it!
                 real_demage = calc_real_demage(use_demage, diff_to_him)
-                if real_demage > use_demage * 1.75 and use_demage > max_shoot_energy - 10: # TODO: change condition!
-                    print('shoot, use {}, expected demage {}'.format(use_demage, real_demage))
-                    ops = (make_shoot_request(ship, his_pos, use_demage), ops)
+                if real_demage > use_demage * 1.7 and use_demage > max_shoot_energy - 10 and real_demage > best_shot[0]: # TODO: change condition!
+                    best_shot = (real_demage, make_shoot_request(ship, his_pos, use_demage))
+                    print('shoot?, use {}, expected demage {}'.format(use_demage, real_demage))
+            if best_shot[0] != -1:
+                print("shoot!", best_shot[0])
+                ops = (best_shot[1], ops)
 
         # uncomment, when you think it is useful
         # if game_state.my_type == ATTACKER_ID and another_ship is not None:
