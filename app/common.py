@@ -112,11 +112,28 @@ class Point(object):
     def __sub__(self, other):
         return Point(self.x - other.x, self.y - other.y)
 
+    def __repr__(self):
+        return str(self.aslist())
+
 
 class Move(object):
     def __init__(self, args):
         self.move_type = args[0]
         self.args = args[1:]
+
+    def __repr__(self):
+        if self.move_type == 0:
+            return "move:{0}".format(self.pos())
+        if self.move_type == 2:
+            if len(self.args) >= 4:
+                return "shoot:{0}, pwr {1}, dmg {2}, unknown {3}".format(self.pos(), self.args[1], self.args[2], self.args[3])
+
+        return "m{0} {1}".format(self.move_type, self.args)
+
+    def pos(self):
+        if self.args and (isinstance(self.args[0], list) or isinstance(self.args[0], tuple)):
+            return Point(self.args[0])
+        return Point(0, 0)
 
 
 class Ship(object):

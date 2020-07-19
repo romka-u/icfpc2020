@@ -122,7 +122,7 @@ def main():
             print("got  <- {}".format(ins[turn]))
             prev_turn = turn
 
-        last_text_pos_y = 50
+        last_text_pos_y = 40
         for sh in gs.ships:
             if sh.player_type == gs.my_type:
                 color = (0, 192, 0)
@@ -130,23 +130,31 @@ def main():
                 color = (192, 0, 0)
 
             screen_pos = to_screen(sh.pos)
-            pygame.draw.circle(screen, color, screen_pos, 20, 3)
-            pygame.draw.line(screen, color, screen_pos, to_screen(sh.pos + sh.speed), 3)
+            if sh.player_type == 1:
+                pygame.draw.circle(screen, color, screen_pos, 15, 2)
+            else:
+                pygame.draw.rect(screen, color, (screen_pos[0] - 15, screen_pos[1] - 15, 30, 30), 2)
+            pygame.draw.line(screen, color, screen_pos, to_screen(sh.pos + sh.speed), 2)
             screen.blit(font.render(str(sh.ship_id), 1, color), (screen_pos[0] - 35, screen_pos[1] - 12))
 
-            text_info = font_ship_info.render(
-                'ship (id = {}, energy = {}, shoot_energy = {}, rest = {}, health = {}, tired = {}/{})'.
-                    format(sh.ship_id,
-                           sh.energy,
-                           sh.shoot_energy,
-                           sh.rest,
-                           sh.health,
-                           sh.tiredness,
-                           sh.tiredness_limit,
-                           ), 1,
-                color)
+            text = 'ship (id:{}, energy:{}, shoot_energy:{}, rest:{}, health:{}, tired:{}/{})'.format(
+                sh.ship_id,
+                sh.energy,
+                sh.shoot_energy,
+                sh.rest,
+                sh.health,
+                sh.tiredness,
+                sh.tiredness_limit)
+
+            for m in sh.prev_moves:
+                text += "  " + str(m)
+                if m.move_type == 2:
+                    target_pos = to_screen(m.pos())
+                    pygame.draw.line(screen, color, screen_pos, target_pos, 1 + m.args[2] // 10)
+
+            text_info = font_ship_info.render(text, 1, color)
             screen.blit(text_info, (10, last_text_pos_y))
-            last_text_pos_y += 30
+            last_text_pos_y += 24
 
         border_color = (200, 200, 200)
         draw_centered_rect(border_color, gs.world_size, 2)
