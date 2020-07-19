@@ -45,6 +45,8 @@ def get_gravity(ship_pos):
 def calc_real_demage(use_energy, position):
     x = abs(position.x)
     y = abs(position.y)
+    if max(x, y) == 0:
+        return 0
     ratio = abs(2.0 * min(x, y) / max(x, y) - 1)
     return max(0, int(math.ceil((use_energy * 3 + 1) * ratio - max(x, y))))
 
