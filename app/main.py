@@ -67,8 +67,7 @@ def make_commands_request(key, game_state):
             his_pos = Point(another_ship.pos.x, another_ship.pos.y)
             my_speed = Point(ship.speed.x, ship.speed.y)
             his_speed = Point(another_ship.speed.x, another_ship.speed.y)
-            min_dist = 787788
-            min_turn = -1
+            cmin = (787788, None, None)
             for i in range(30):
               if i < len(sequence):
                 my_speed += sequence[i]
@@ -78,25 +77,23 @@ def make_commands_request(key, game_state):
               his_speed += get_gravity(his_pos)
               his_pos += his_speed
               dist = abs(my_pos.x - his_pos.x) + abs(my_pos.y - his_pos.y)
+              mmdist = max(abs(my_pos.x - his_pos.x), abs(my_pos.y - his_pos.y))
               #if i < 10:
               #  print('iter', sequence, i, my_pos.aslist(), my_speed.aslist(), his_pos.aslist(), his_speed.aslist())
-              if dist < min_dist:
-                min_dist = dist
-                min_turn = i
+              if dist < cmin[0]:
+                cmin = (dist, i, mmdist)
               if max(abs(my_pos.x), abs(my_pos.y)) <= game_state.planet_size:
-                min_dist = 1000 if game_state.my_type == 0 else -1000
-                min_turn = -i
+                cmin = (1000 if game_state.my_type == 0 else -1000, -i, 1e9)
                 break
               if max(abs(my_pos.x), abs(my_pos.y)) > game_state.world_size:
-                min_dist = 1000 if game_state.my_type == 0 else -1000
-                min_turn = -i
+                cmin = (1000 if game_state.my_type == 0 else -1000, -i, 1e9)
                 break
               #if max(abs(his_pos.x), abs(his_pos.y)) <= 16: # !! change to real constant
               #  break
             if game_state.my_type == 1:
-              min_dist = -min_dist
-            if (min_dist, min_turn) < best_distance:
-              best_distance = (min_dist, min_turn)
+              cmin = (-cmin[0], cmin[1], cmin[2])
+            if cmin < best_distance:
+              best_distance = cmin
               best_sequence = sequence
           if best_distance[0] != 1000:
             break
@@ -111,7 +108,8 @@ def make_commands_request(key, game_state):
         print("go", dx, dy)
         ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
 
-        if best_distance == (0, 0) and game_state.my_type == 0:
+        if best_distance[2] <= 1 and game_state.my_type == 0:
+          print("explode!")
           ops = ((1, (ship.ship_id, None)), ops)
 
         # uncomment, when you think it is useful
