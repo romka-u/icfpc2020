@@ -4,6 +4,7 @@ import random
 import time
 import itertools
 import math
+import random
 from collections import defaultdict
 from common import *
 
@@ -11,7 +12,7 @@ def make_join_request(key):
     m = mod([2, [key, [None, None]]])
     return m
 
-max_shoot_energy = 32
+max_shoot_energy = 64
 
 def make_start_request(key, resp):
     max_score = flatten(dem(resp))[2][2][0]
@@ -54,6 +55,8 @@ def get_gravity(ship_pos):
 def calc_real_demage(use_energy, position):
     x = abs(position.x)
     y = abs(position.y)
+    if max(x, y) == 0:
+        return 0
     ratio = abs(2.0 * min(x, y) / max(x, y) - 1)
     return max(0, int(math.ceil((use_energy * 3 + 1) * ratio - max(x, y))))
 
@@ -75,14 +78,20 @@ def predict_action(last_action):
         cur_prediction = None
         for xmul in {-1, 1}:
             for ymul in {-1, 1}:
-                for swap_coords in {0, 1}:
+                for swap_coords in {0}:
                     transformed_action = apply_transform(was_action, xmul, ymul, swap_coords)
                     if transformed_action == last_action:
                         cur_prediction = apply_transform(next_action, xmul, ymul, swap_coords)
         if cur_prediction is not None:
             options[cur_prediction] = options[cur_prediction] + 1
     print('predictions: ', options)
-    return last_action
+    best_prediction = last_action
+    best_num = 1
+    for k, v in options.items():
+        if v > best_num:
+            best_prediction = k
+            best_num = v
+    return best_prediction
 
 
 def make_commands_request(key, game_state):
@@ -97,7 +106,10 @@ def make_commands_request(key, game_state):
     his_action = Point(0, 0) - another_ship.get_last_move()
     print('his_action', his_action)
     all_his_actions.append(his_action)
+
     moves = [Point(dx, dy) for dx in range(-1, 2) for dy in range(-1, 2)]
+    can_skip_accelerate = False
+
     for ship in game_state.ships:
       if ship.player_type == game_state.my_type:
         print("ship coords =", ship.pos.aslist())
@@ -133,8 +145,12 @@ def make_commands_request(key, game_state):
                 break
               #if max(abs(his_pos.x), abs(his_pos.y)) <= 16: # !! change to real constant
               #  break
+            if game_state.my_type == DEFENDER_ID and sequence[0] == Point(0, 0):
+                cmin[0] += 50
             if game_state.my_type == 1:
               cmin = (-cmin[0], cmin[1], cmin[2])
+            if cmin[0] < 787 and sequence[0] == Point(0, 0):
+                can_skip_accelerate = True
             if cmin < best_distance:
               best_distance = cmin
               best_sequence = sequence
@@ -147,6 +163,11 @@ def make_commands_request(key, game_state):
 
         dx = -best_sequence[0].x
         dy = -best_sequence[0].y
+        # TODO: change random?
+        if can_skip_accelerate and (ship.tiredness > 10 or (random.randint(0, 4) != 0 and game_state.my_type == ATTACKER_ID)):
+            dx = 0
+            dy = 0
+            print("skip accelerate at this point, because too tired", ship.tiredness)
         print("go", dx, dy)
         ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
 
@@ -155,10 +176,16 @@ def make_commands_request(key, game_state):
           ops = ((1, (ship.ship_id, None)), ops)
 
         if game_state.my_type == ATTACKER_ID:
-            if another_ship is not None:
+            best_shot = (-1, None)
+            for another_ship in game_state.ships:
+                if another_ship.player_type == game_state.my_type:
+                    continue
                 his_pos = Point(another_ship.pos.x, another_ship.pos.y)
                 his_speed = Point(another_ship.speed.x, another_ship.speed.y)
-                his_speed += predict_action(his_action)
+                prediction = predict_action(his_action)
+                if another_ship.energy == 0:
+                    prediction = Point(0, 0)
+                his_speed += prediction
                 his_speed += get_gravity(his_pos)
                 his_pos += his_speed
 
@@ -171,9 +198,14 @@ def make_commands_request(key, game_state):
                 diff_to_him = his_pos - my_pos
                 use_demage = min(max_shoot_energy, ship.tiredness_limit - ship.tiredness) # TODO: change it!
                 real_demage = calc_real_demage(use_demage, diff_to_him)
-                if real_demage > use_demage and use_demage > 0: # TODO: change condition!
-                    print('shoot, use {}, expected demage {}'.format(use_demage, real_demage))
-                    ops = (make_shoot_request(ship, his_pos, use_demage), ops)
+                if another_ship.rest > 5 and another_ship.tiredness + 8 + real_demage - another_ship.rest <= another_ship.tiredness_limit:
+                    continue
+                if real_demage > use_demage * 1.5 and use_demage > max_shoot_energy - 10 and real_demage > best_shot[0]: # TODO: change condition!
+                    best_shot = (real_demage, make_shoot_request(ship, his_pos, use_demage))
+                    print('shoot?, use {}, expected demage {}'.format(use_demage, real_demage))
+            if best_shot[0] != -1:
+                print("shoot!", best_shot[0])
+                ops = (best_shot[1], ops)
 
         # uncomment, when you think it is useful
         # if game_state.my_type == ATTACKER_ID and another_ship is not None:
