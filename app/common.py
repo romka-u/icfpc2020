@@ -148,7 +148,7 @@ class GameState(object):
         self.planet_size = -1
 
         try:
-            if a[0] == 0:
+            if a[0] == 0 or len(a) < 4 or a[3][2] is None:
                 self.game_finished = True
             else:
                 self.ships = list(map(parse_ship, a[3][2]))
@@ -160,6 +160,7 @@ class GameState(object):
                     # no sizes in tutorials, but who cares
                     pass
         except Exception as e:
+            print(a[3][2])
             print("Can not parse game state:", e, a)
             pass
 

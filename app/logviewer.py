@@ -58,6 +58,7 @@ def main():
     outs, ins = [], []
 
     turn = 0
+    total_turns = 0
     prev_turn = -1
 
     pygame.key.set_repeat(500, 30)
