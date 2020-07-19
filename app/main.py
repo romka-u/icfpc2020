@@ -8,7 +8,15 @@ def make_join_request(key):
 
 def make_start_request(key, resp):
     # m = mod([3, [key, [None, None]]])
-    m = mod([3, [key, [[326, [0, [10, [1, None]]]], None]]])
+    max_score = flatten(dem(resp))[2][2][0]
+    if max_score == 448:
+        characteristics = [326, [0, [10, [1, None]]]]
+    elif max_score == 512:
+        characteristics = [326, [16, [10, [1, None]]]]
+    else:
+        #TODO: FIX IT PLEASE!
+        characteristics = [1, [1, [1, [1, None]]]]
+    m = mod([3, [key, [characteristics, None]]])
     return m
 
 def signum(number):
@@ -17,6 +25,9 @@ def signum(number):
     if number < 0:
         return -1
     return 0
+
+def make_shoot_request(my_ship, another_ship, power):
+    return 2, (my_ship.ship_id, ((another_ship.pos.x, another_ship.pos.y), (power, None)))
 
 def make_commands_request(key, game_state):
     print(game_state.my_type)
@@ -36,9 +47,9 @@ def make_commands_request(key, game_state):
           dy = 0
         print("go", dx, dy)
         ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
-        if game_state.my_type == 0 and another_ship is not None:
-            # attacker?
-            ops = ((2, (ship.ship_id, ((another_ship.pos.x, another_ship.pos.y), (64, None)))), ops)
+        # uncomment, when you think it is useful
+        # if game_state.my_type == ATTACKER_ID and another_ship is not None:
+        #     ops = (make_shoot_request(ship, another_ship, 1), ops)
     m = mod((4, (key, (ops, None))))
     return m
 

@@ -1,6 +1,9 @@
 from itertools import starmap
 import requests
 
+ATTACKER_ID = 0
+DEFENDER_ID = 1
+
 local_url = "https://icfpc2020-api.testkontur.ru/aliens/send?apiKey=1242ae59bc9f4385b3c3eaa60764a09c"
 
 def mod_num(num):
