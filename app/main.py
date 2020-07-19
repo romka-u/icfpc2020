@@ -1,5 +1,6 @@
 import requests
 import sys
+import itertools
 from common import *
 
 def make_join_request(key):
@@ -29,6 +30,14 @@ def signum(number):
 def make_shoot_request(my_ship, another_ship, power):
     return 2, (my_ship.ship_id, ((another_ship.pos.x, another_ship.pos.y), (power, None)))
 
+def get_gravity(ship_pos):
+    gravity = Point(0, 0)
+    if abs(ship_pos.x) >= abs(ship_pos.y):
+        gravity.x = -signum(ship_pos.x)
+    if abs(ship_pos.y) >= abs(ship_pos.x):
+        gravity.y = -signum(ship_pos.y)
+    return gravity
+  
 def make_commands_request(key, game_state):
     print(game_state.my_type)
     ops = None
@@ -36,17 +45,68 @@ def make_commands_request(key, game_state):
     for ship in game_state.ships:
         if ship.player_type != game_state.my_type:
             another_ship = ship
+    print('his_pos', another_ship.pos)
+    his_action = Point(0, 0)
+    for his_move in another_ship.prev_moves:
+      if his_move.move_type == 0:
+        his_action = Point(0, 0) - his_move.pos()
+    print('his_action', his_action)
+    moves = []
+    for dx in range(-1, 2):
+      for dy in range(-1, 2):
+        moves.append(Point(dx, dy))
     for ship in game_state.ships:
       if ship.player_type == game_state.my_type:
         print("ship coords =", ship.pos.aslist())
-        dx = -signum(ship.pos.x)
-        dy = -signum(ship.pos.y)
-        if signum(ship.speed.x) == signum(ship.pos.x):
-          dx = 0
-        if signum(ship.speed.y) == signum(ship.pos.y):
-          dy = 0
+        print('my speed', ship.speed.aslist())
+        best_distance = (787788789, -1)
+        best_sequence = []
+        for sequence in itertools.product(moves, repeat = 2):
+          my_pos = Point(ship.pos.x, ship.pos.y)
+          his_pos = Point(another_ship.pos.x, another_ship.pos.y)
+          my_speed = Point(ship.speed.x, ship.speed.y)
+          his_speed = Point(another_ship.speed.x, another_ship.speed.y)
+          min_dist = 787788
+          min_turn = -1
+          for i in range(30):
+            if i < len(sequence):
+              my_speed += sequence[i]
+            my_speed += get_gravity(my_pos)
+            my_pos += my_speed
+            his_speed += his_action
+            his_speed += get_gravity(his_pos)
+            his_pos += his_speed
+            dist = abs(my_pos.x - his_pos.x) + abs(my_pos.y - his_pos.y)
+            #if i < 10:
+            #  print('iter', sequence, i, my_pos.aslist(), my_speed.aslist(), his_pos.aslist(), his_speed.aslist())
+            if dist < min_dist:
+              min_dist = dist
+              min_turn = i
+            if max(abs(my_pos.x), abs(my_pos.y)) <= 16: # !! change to real constant
+              min_dist += 100
+              break
+            if max(abs(my_pos.x), abs(my_pos.y)) > 128: # !! change to real constant
+              min_dist += 100
+              break
+            if max(abs(his_pos.x), abs(his_pos.y)) <= 16: # !! change to real constant
+              break
+          #print(sequence)
+          #print(min_dist)
+          if (min_dist, min_turn) < best_distance:
+            best_distance = (min_dist, min_turn)
+            best_sequence = sequence
+        #print('-- --')
+        print('dist', best_distance)
+        print(best_sequence)
+
+        dx = -best_sequence[0].x
+        dy = -best_sequence[0].y
         print("go", dx, dy)
         ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
+
+        if best_distance == (0, 0) and game_state.my_type == 0:
+          ops = ((1, (ship.ship_id, None)), ops)
+        
         # uncomment, when you think it is useful
         # if game_state.my_type == ATTACKER_ID and another_ship is not None:
         #     ops = (make_shoot_request(ship, another_ship, 1), ops)
