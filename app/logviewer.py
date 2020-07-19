@@ -62,19 +62,24 @@ def main():
 
     pygame.key.set_repeat(500, 30)
 
-    d = os.path.dirname(os.path.realpath(__file__))
-    fname = os.path.join(d, "logs", "commands_{:.0f}".format(time.time()))
-    cf = open(fname, "w")
+    if len(sys.argv) > 1 and sys.argv[1] == '-s':
+        d = os.path.dirname(os.path.realpath(__file__))
+        fname = os.path.join(d, "logs", "commands_{:.0f}".format(time.time()))
+        cf = open(fname, "w")
+    else:
+        cf = None
 
     global sz
     while True:
         while not input_queue.empty():
             line = input_queue.get()
             if line.startswith("->"):
-                cf.write(line)
+                if cf is not None:
+                    cf.write(line)
                 outs.append(parse_line(line[3:].strip()))
             if line.startswith("<-"):
-                cf.write(line)
+                if cf is not None:
+                    cf.write(line)
                 ins.append(parse_line(line[3:].strip()))
 
         for event in pygame.event.get():
