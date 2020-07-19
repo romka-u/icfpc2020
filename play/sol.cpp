@@ -399,7 +399,10 @@ struct Node {
           Node* x0 = this->right;
           x0->eval();
 //          debug(x0->repr(-10));
-          debug(x0->unlist());
+          auto PrintWithArrow = [&](string arrow, string to_print) {
+            cerr << arrow << " " << to_print << endl;//.substr(1, max(0, (int) to_print.size() - 2)) << endl;
+          };
+          PrintWithArrow("->", x0->unlist());
           string to_send = x0->modulate();
 //          debug(to_send);
           system(("curl -X POST \"https://icfpc2020-api.testkontur.ru/aliens/send?apiKey=1242ae59bc9f4385b3c3eaa60764a09c\" -H  \"accept: */*\" -H  \"Content-Type: text/plain\" -d \"" + to_send + "\" >tmp/zcurlout 2>tmp/znul").c_str());
@@ -410,7 +413,7 @@ struct Node {
 //          debug(received);
           Node* received_node = Demodulate(received);
 //          debug(received_node->repr(-10));
-          debug(received_node->unlist());
+          PrintWithArrow("<-", received_node->unlist());
           this->text = received_node->text;
           this->left = received_node->left;
           this->right = received_node->right;
