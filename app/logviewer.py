@@ -55,7 +55,7 @@ def main():
 
     outs, ins = [], []
 
-    turn = 1
+    turn = 0
     prev_turn = -1
 
     pygame.key.set_repeat(500, 30)
@@ -69,7 +69,6 @@ def main():
             if line.startswith("<-"):
                 ins.append(parse_line(line[3:].strip()))
 
-        total_turns = min(len(ins), len(outs))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -86,10 +85,17 @@ def main():
                     if turn + 1 < total_turns:
                         turn += 1
 
+        total_turns = min(len(ins), len(outs))
         if total_turns == 0:
             continue
 
-        gs = GameState(ins[turn])
+        try:
+            gs = GameState(ins[turn])
+        except:
+            if turn == 0 and total_turns > 1:
+                turn += 1
+                gs = GameState(ins[turn])
+
         screen.fill(0)
         if turn != prev_turn:
             print("=" * 20)
