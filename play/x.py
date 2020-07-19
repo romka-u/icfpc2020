@@ -5,9 +5,14 @@ import os
 import pygame
 import sys
 pygame.init()
-sz = 7
-w = 1600
-h = 1024
+if os.name == 'nt':
+  sz = 2
+  w = 1200
+  h = 600
+else:
+  sz = 7
+  w = 1600
+  h = 1024
 screen = pygame.display.set_mode([w, h])
 pixels = {}
 
@@ -23,8 +28,10 @@ def cell_to_pos(cx, cy):
 def draw():
   global state, pics
   screen.fill(0)
+  current_color = 255
   for pic in pics[::-1]:
-    color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+    current_color = max(50, current_color - 40)
+    color = (current_color, current_color, current_color)
     for cell in pic:
       pos = cell_to_pos(*cell)
       pygame.draw.rect(screen, color, (pos[0], pos[1], sz, sz))
@@ -60,7 +67,10 @@ while True:
             intro = open('g.txt', 'r').read()
             intro += 'ap ap ap interact :galaxy ' + state + ' ap ap cons ' + str(x) + ' ' + str(y) + '\n'
             open('tmp/za.txt', 'w').write(intro)
-            os.system('./sol <tmp/za.txt >tmp/z.hs')
+            if os.name == 'nt':
+              os.system('sol.exe <tmp/za.txt >tmp/z.hs')
+            else:
+              os.system('./sol <tmp/za.txt >tmp/z.hs')
             lines = open('tmp/z.hs', 'r').readlines()
             line = lines[4].strip().split()
             state = ''

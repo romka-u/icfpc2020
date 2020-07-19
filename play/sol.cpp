@@ -1,7 +1,9 @@
 /**
  *    author:  tourist
- *    created: 18.07.2020 12:34:33
+ *    created: 18.07.2020 12:34:33       
 **/
+#define LOCAL
+
 #undef _GLIBCXX_DEBUG
 
 #include <vector>
@@ -12,6 +14,9 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <bitset>
+#include <cassert>
+#include <functional>
 
 using namespace std;
 
@@ -393,7 +398,8 @@ struct Node {
         if (aps == 1) {
           Node* x0 = this->right;
           x0->eval();
-          debug(x0->repr());
+//          debug(x0->repr(-10));
+          debug(x0->unlist());
           string to_send = x0->modulate();
 //          debug(to_send);
           system(("curl -X POST \"https://icfpc2020-api.testkontur.ru/aliens/send?apiKey=1242ae59bc9f4385b3c3eaa60764a09c\" -H  \"accept: */*\" -H  \"Content-Type: text/plain\" -d \"" + to_send + "\" >tmp/zcurlout 2>tmp/znul").c_str());
@@ -403,7 +409,8 @@ struct Node {
           in.close();
 //          debug(received);
           Node* received_node = Demodulate(received);
-          debug(received_node->repr());
+//          debug(received_node->repr(-10));
+          debug(received_node->unlist());
           this->text = received_node->text;
           this->left = received_node->left;
           this->right = received_node->right;
