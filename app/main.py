@@ -83,10 +83,12 @@ def make_commands_request(key, game_state):
               min_dist = dist
               min_turn = i
             if max(abs(my_pos.x), abs(my_pos.y)) <= 16: # !! change to real constant
-              min_dist += 1000 if game_state.my_type == 0 else -1000
+              min_dist = 1000 if game_state.my_type == 0 else -1000
+              min_turn = -i
               break
             if max(abs(my_pos.x), abs(my_pos.y)) > 128: # !! change to real constant
-              min_dist += 1000 if game_state.my_type == 0 else -1000
+              min_dist = 1000 if game_state.my_type == 0 else -1000
+              min_turn = -i
               break
             #if max(abs(his_pos.x), abs(his_pos.y)) <= 16: # !! change to real constant
             #  break
