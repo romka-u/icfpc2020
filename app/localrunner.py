@@ -5,7 +5,7 @@ def create_new_game_request():
     m = mod([1, [0, None]])
     return m
 
-def cretea_join_local_game_request(key):
+def create_join_local_game_request(key):
     m = mod([5, [key, None]])
     return m
 
@@ -25,7 +25,7 @@ def main():
     print("defender_key:", defender_key)
 
     # ignore this response?
-    join_local_response = send(cretea_join_local_game_request(attacker_key))
+    join_local_response = send(create_join_local_game_request(attacker_key))
 
     print('run attack process')
     attacker_log = 'tmp/attacker.log'
