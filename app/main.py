@@ -21,6 +21,10 @@ def signum(number):
 def make_commands_request(key, game_state):
     print(game_state.my_type)
     ops = None
+    another_ship = None
+    for ship in game_state.ships:
+        if ship.player_type != game_state.my_type:
+            another_ship = ship
     for ship in game_state.ships:
       if ship.player_type == game_state.my_type:
         print("ship coords =", ship.pos.aslist())
@@ -32,6 +36,9 @@ def make_commands_request(key, game_state):
           dy = 0
         print("go", dx, dy)
         ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
+        if game_state.my_type == 0 and another_ship is not None:
+            # attacker?
+            ops = ((2, (ship.ship_id, ((another_ship.pos.x, another_ship.pos.y), (64, None)))), ops)
     m = mod((4, (key, (ops, None))))
     return m
 
