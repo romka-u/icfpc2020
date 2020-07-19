@@ -20,10 +20,14 @@ font = pygame.font.SysFont("verdanattf", 18)
 
 
 def parse_line(line):
-    a = eval(line)
-    f = flatten(a)
-    # print(a, "--f->", f)
-    return f
+    try:
+        a = eval(line)
+        f = flatten(a)
+        # print(a, "--f->", f)
+        return f
+    except Exception as e:
+        print("WARNING: Can't parse line - ", line)
+        return [0]
 
 def to_screen(pos):
     return (w // 2 + sz * pos.x, h // 2 + sz * pos.y)
