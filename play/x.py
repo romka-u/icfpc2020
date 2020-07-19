@@ -14,6 +14,22 @@ else:
   h = 1024
 screen = pygame.display.set_mode([w, h])
 pixels = {}
+palette = [
+    (192, 192, 192),
+    (192, 0, 0),
+    (192, 0, 192),
+    (0, 192, 192),
+    (0, 0, 192),
+    (0, 192, 0),
+    (192, 192, 0),
+    (255, 64, 192),
+    (255, 192, 64),
+    (64, 192, 255),
+    (64, 255, 192),
+    (192, 255, 64),
+    (192, 64, 255),
+    (80, 80, 80)
+]
 
 def pos_to_cell(pos):
     x = (pos[0] - w//2) // sz
@@ -28,12 +44,15 @@ def draw():
   global state, pics
   screen.fill(0)
   current_color = 255
-  for pic in pics[::-1]:
-    current_color = max(50, current_color - 40)
-    color = (current_color, current_color, current_color)
-    for cell in pic:
-      pos = cell_to_pos(*cell)
-      pygame.draw.rect(screen, color, (pos[0], pos[1], sz, sz))
+  for i, pic in enumerate(pics[::-1]):
+      if i < len(palette):
+          color = palette[i]
+      else:
+          current_color = max(50, current_color - 40)
+          color = (current_color, current_color, current_color)
+      for cell in pic:
+          pos = cell_to_pos(*cell)
+          pygame.draw.rect(screen, color, (pos[0], pos[1], sz, sz))
   pygame.display.update()
 
 save_id = 0
