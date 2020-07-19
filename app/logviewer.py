@@ -12,9 +12,12 @@ sz = 7
 display_info = pygame.display.Info()
 w = display_info.current_w
 h = display_info.current_h
-print('try to guess screen size:', w, h)
+print("try to guess screen size:", w, h)
 screen = pygame.display.set_mode([w, h])
+print("Loading font...", end="")
+sys.stdout.flush()
 font = pygame.font.SysFont("verdanattf", 18)
+print("done")
 
 
 def parse_line(line):

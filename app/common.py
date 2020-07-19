@@ -111,9 +111,9 @@ class Point(object):
 
 
 class Move(object):
-    def __init__(self, move_type, arg):
-        self.move_type = move_type
-        self.arg = arg
+    def __init__(self, args):
+        self.move_type = args[0]
+        self.args = args[1:]
 
 
 class Ship(object):
@@ -134,7 +134,7 @@ def parse_ship(ship_list):
     ship_id = ship_info[1]
     skills = ship_info[4]
 
-    prev_moves = [] if ship_list[1] is None else list(starmap(Move, ship_list[1]))
+    prev_moves = [] if ship_list[1] is None else list(map(Move, ship_list[1]))
 
     return Ship(pos, speed, player_type, ship_id, skills, prev_moves)
 
