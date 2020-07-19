@@ -1,4 +1,5 @@
 import sys
+import os
 import pygame
 import time
 import queue
@@ -61,7 +62,9 @@ def main():
 
     pygame.key.set_repeat(500, 30)
 
-    cf = open("logs/commands_{:.0f}".format(time.time()), "w")
+    d = os.path.dirname(os.path.realpath(__file__))
+    fname = os.path.join(d, "logs", "commands_{:.0f}".format(time.time()))
+    cf = open(fname, "w")
 
     global sz
     while True:
