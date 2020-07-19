@@ -140,10 +140,10 @@ def make_commands_request(key, game_state):
                 break
               #if max(abs(his_pos.x), abs(his_pos.y)) <= 16: # !! change to real constant
               #  break
-            if game_state.my_type == DEFENDER_ID and sequence[0] == Point(0, 0):
-                cmin[0] += 50
             if game_state.my_type == 1:
               cmin = (-cmin[0], cmin[1], cmin[2])
+            if game_state.my_type == DEFENDER_ID and sequence[0] == Point(0, 0):
+                cmin = (cmin[0] + 50, cmin[1], cmin[2])
             if cmin[0] < 787 and sequence[0] == Point(0, 0):
                 can_skip_accelerate = True
             if cmin < best_distance:
