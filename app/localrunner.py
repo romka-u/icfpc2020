@@ -36,7 +36,7 @@ def main():
     with open('tmp/defender.log', 'wb') as out:
         defender_process = subprocess.Popen(['python3', 'main.py', 'local', defender_key], stdout=out)
 
-    viewer_cmd = 'tail -F -c +1 ' + attacker_log + ' | python3 logviewer.py'
+    viewer_cmd = 'python3 logviewer.py < ' + attacker_log
     viewer_process = subprocess.Popen(viewer_cmd, shell=True)
     viewer_process.wait()
 
