@@ -2,6 +2,7 @@ import requests
 import sys
 import itertools
 import math
+import random
 from collections import defaultdict
 from common import *
 
@@ -9,7 +10,7 @@ def make_join_request(key):
     m = mod([2, [key, [None, None]]])
     return m
 
-max_shoot_energy = 32
+max_shoot_energy = 64
 
 def make_start_request(key, resp):
     # m = mod([3, [key, [None, None]]])
@@ -103,6 +104,7 @@ def make_commands_request(key, game_state):
     for dx in range(-1, 2):
       for dy in range(-1, 2):
         moves.append(Point(dx, dy))
+    can_skip_accelerate = False
     for ship in game_state.ships:
       if ship.player_type == game_state.my_type:
         print("ship coords =", ship.pos.aslist())
@@ -140,6 +142,8 @@ def make_commands_request(key, game_state):
               #  break
             if game_state.my_type == 1:
               cmin = (-cmin[0], cmin[1], cmin[2])
+            if cmin[0] < 787 and sequence[0] == Point(0, 0):
+                can_skip_accelerate = True
             if cmin < best_distance:
               best_distance = cmin
               best_sequence = sequence
@@ -153,6 +157,11 @@ def make_commands_request(key, game_state):
 
         dx = -best_sequence[0].x
         dy = -best_sequence[0].y
+        # TODO: change random?
+        if can_skip_accelerate and (ship.tiredness > 10 or random.randint(0, 4) != 0):
+            dx = 0
+            dy = 0
+            print("skip accelerate at this point, because too tired", ship.tiredness)
         print("go", dx, dy)
         ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
 
@@ -164,7 +173,10 @@ def make_commands_request(key, game_state):
             if another_ship is not None:
                 his_pos = Point(another_ship.pos.x, another_ship.pos.y)
                 his_speed = Point(another_ship.speed.x, another_ship.speed.y)
-                his_speed += predict_action(his_action)
+                prediction = predict_action(his_action)
+                if another_ship.energy == 0:
+                    prediction = Point(0, 0)
+                his_speed += prediction
                 his_speed += get_gravity(his_pos)
                 his_pos += his_speed
 
@@ -177,7 +189,7 @@ def make_commands_request(key, game_state):
                 diff_to_him = his_pos - my_pos
                 use_demage = min(max_shoot_energy, ship.tiredness_limit - ship.tiredness) # TODO: change it!
                 real_demage = calc_real_demage(use_demage, diff_to_him)
-                if real_demage > use_demage and use_demage > 0: # TODO: change condition!
+                if real_demage > use_demage * 1.75 and use_demage > max_shoot_energy - 10: # TODO: change condition!
                     print('shoot, use {}, expected demage {}'.format(use_demage, real_demage))
                     ops = (make_shoot_request(ship, his_pos, use_demage), ops)
 
