@@ -68,7 +68,7 @@ def predict_action(last_action):
         cur_prediction = None
         for xmul in {-1, 1}:
             for ymul in {-1, 1}:
-                for swap_coords in {0, 1}:
+                for swap_coords in {0}:
                     transformed_action = apply_transform(was_action, xmul, ymul, swap_coords)
                     if transformed_action == last_action:
                         cur_prediction = apply_transform(next_action, xmul, ymul, swap_coords)
