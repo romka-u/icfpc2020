@@ -102,6 +102,9 @@ def make_commands_request(key, game_state):
         return mod((4, (key, (ops, None))))
 
     another_ship = opp_ships[0]
+    for opponent_ship in opp_ships:
+        if opponent_ship.health > another_ship.health:
+            another_ship = opponent_ship
     print('his_pos', another_ship.pos)
     his_action = Point(0, 0) - another_ship.get_last_move()
     print('his_action', his_action)
@@ -206,12 +209,17 @@ def make_commands_request(key, game_state):
               my_pos += my_speed
 
               diff_to_him = his_pos - my_pos
+              if max(abs(diff_to_him.x), abs(diff_to_him.y)) <= 1:
+                  continue
               use_demage = min(max_shoot_energy, ship.tiredness_limit - ship.tiredness) # TODO: change it!
               real_demage = calc_real_demage(use_demage, diff_to_him)
               if another_ship.rest > 5 and another_ship.tiredness + 8 + real_demage - another_ship.rest <= another_ship.tiredness_limit:
                   continue
-              if real_demage > use_demage * 1.5 and use_demage > max_shoot_energy - 10 and real_demage > best_shot[0]: # TODO: change condition!
-                  best_shot = (real_demage, make_shoot_request(ship, his_pos, use_demage))
+              shoot_score = use_demage
+              if another_ship.health > 1:
+                  shoot_score *= 2
+              if real_demage > use_demage * 1.5 and use_demage > max_shoot_energy - 10 and shoot_score > best_shot[0]: # TODO: change condition!
+                  best_shot = (shoot_score, make_shoot_request(ship, his_pos, use_demage))
                   print('shoot?, use {}, expected demage {}'.format(use_demage, real_demage))
           if best_shot[0] != -1:
               print("shoot!", best_shot[0])
