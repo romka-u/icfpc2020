@@ -7,7 +7,7 @@ from collections import defaultdict
 from common import *
 
 def make_join_request(key):
-    m = mod([2, [key, [None, None]]])
+    m = mod([2, [key, [[103652820, [192496425430, None]], None]]])
     return m
 
 max_shoot_energy = 64
