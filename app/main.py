@@ -122,8 +122,9 @@ def make_commands_request(key, game_state):
         if game_state.my_type == ATTACKER_ID:
           best_distance = (787788789, -1)
           best_sequence = []
-          for reps in range(2, 4):
-            for sequence in itertools.product(moves, repeat=reps):
+          for reps in range(2, 7):
+            for sequence in itertools.product(moves, repeat=min(reps, 3)):
+              sequence = list(sequence[:reps]) + [sequence[-1]] * (reps - min(reps, 3))
               my_pos = ship.pos.clone()
               his_pos = another_ship.pos.clone()
               my_speed = ship.speed.clone()
