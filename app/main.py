@@ -246,7 +246,7 @@ def make_commands_request(key, game_state):
               my_speed = ship.speed.clone()
               failed = False
               passed = 0
-              for i in range(256 - game_state.tick):
+              for i in range(384 - game_state.tick):
                 if i < len(sequence):
                   my_speed += sequence[i]
                 my_speed += get_gravity(my_pos)
