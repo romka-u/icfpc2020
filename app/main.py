@@ -124,10 +124,10 @@ def make_commands_request(key, game_state):
           best_sequence = []
           for reps in range(2, 4):
             for sequence in itertools.product(moves, repeat = reps):
-              my_pos = Point(ship.pos.x, ship.pos.y)
-              his_pos = Point(another_ship.pos.x, another_ship.pos.y)
-              my_speed = Point(ship.speed.x, ship.speed.y)
-              his_speed = Point(another_ship.speed.x, another_ship.speed.y)
+              my_pos = ship.pos.clone()
+              his_pos = another_ship.pos.clone()
+              my_speed = ship.speed.clone()
+              his_speed = another_ship.speed.clone()
               cmin = (787788, None, None)
               for i in range(30):
                 if i < len(sequence):
@@ -165,19 +165,16 @@ def make_commands_request(key, game_state):
             #print(sequence)
             #print(min_dist)
           #print('-- --')
-          print('dist', best_distance)
-          print(best_sequence)
+          print('dist', best_distance, best_sequence)
 
           dx = -best_sequence[0].x
           dy = -best_sequence[0].y
           if best_distance[0] == 1000:
-              dx = 0
-              dy = 0
+              dx, dy = 0, 0
               print('skip accelerate because dist = 1000')
           # TODO: change random?
           if can_skip_accelerate and (ship.tiredness > 10 or (random.randint(0, 4) != 0 and game_state.my_type == ATTACKER_ID)):
-              dx = 0
-              dy = 0
+              dx, dy = 0, 0
               print("skip accelerate at this point, because too tired", ship.tiredness)
           print("go", dx, dy)
           ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
@@ -196,8 +193,8 @@ def make_commands_request(key, game_state):
               for another_ship in game_state.ships:
                   if another_ship.player_type == game_state.my_type:
                       continue
-                  his_pos = Point(another_ship.pos.x, another_ship.pos.y)
-                  his_speed = Point(another_ship.speed.x, another_ship.speed.y)
+                  his_pos = another_ship.pos.clone()
+                  his_speed = another_ship.speed.clone()
                   prediction = predict_action(his_action)
                   if another_ship.energy == 0:
                       prediction = Point(0, 0)
@@ -205,8 +202,8 @@ def make_commands_request(key, game_state):
                   his_speed += get_gravity(his_pos)
                   his_pos += his_speed
 
-                  my_pos = Point(ship.pos.x, ship.pos.y)
-                  my_speed = Point(ship.speed.x, ship.speed.y)
+                  my_pos = ship.pos.clone()
+                  my_speed = ship.speed.clone()
                   my_speed += Point(-dx, -dy) # very bad '-' :(
                   my_speed += get_gravity(my_pos)
                   my_pos += my_speed
@@ -243,15 +240,15 @@ def make_commands_request(key, game_state):
 
           good_sequence = []
           found = False
-          
+
           max_passed = -1
           max_sequence = []
 
           random.shuffle(moves_without_zero) # !!
           for reps in range(min_seq_length, 5):
             for sequence in itertools.product(moves_without_zero, repeat = reps):
-              my_pos = Point(ship.pos.x, ship.pos.y)
-              my_speed = Point(ship.speed.x, ship.speed.y)
+              my_pos = ship.pos.clone()
+              my_speed = ship.speed.clone()
               failed = False
               passed = 0
               for i in range(256 - game_state.tick):
