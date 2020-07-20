@@ -215,7 +215,7 @@ def make_commands_request(key, game_state):
               real_demage = calc_real_demage(use_demage, diff_to_him)
               if another_ship.rest > 5 and another_ship.tiredness + 8 + real_demage - another_ship.rest <= another_ship.tiredness_limit:
                   continue
-              shoot_score = use_demage
+              shoot_score = real_demage
               if another_ship.health > 1:
                   shoot_score *= 2
               if real_demage > use_demage * 1.5 and use_demage > max_shoot_energy - 10 and shoot_score > best_shot[0]: # TODO: change condition!
