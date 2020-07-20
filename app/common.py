@@ -179,12 +179,14 @@ class GameState(object):
         self.game_finished = False
         self.world_size = 128
         self.planet_size = 16
+        self.tick = -1
 
         try:
             if a[0] == 0 or len(a) < 4 or a[3][2] is None:
                 self.game_finished = True
             else:
                 self.ships = list(map(parse_ship, a[3][2]))
+                self.tick = a[3][0]
                 self.my_type = a[2][1]
                 try:
                     self.world_size = a[2][3][1]
