@@ -123,7 +123,7 @@ def make_commands_request(key, game_state):
           best_distance = (787788789, -1)
           best_sequence = []
           for reps in range(2, 4):
-            for sequence in itertools.product(moves, repeat = reps):
+            for sequence in itertools.product(moves, repeat=reps):
               my_pos = ship.pos.clone()
               his_pos = another_ship.pos.clone()
               my_speed = ship.speed.clone()
@@ -186,42 +186,37 @@ def make_commands_request(key, game_state):
               print("explode!")
               ops = ((1, (ship.ship_id, None)), ops)
 
-
-
-          if game_state.my_type == ATTACKER_ID:
-              best_shot = (-1, None)
-              for another_ship in game_state.ships:
-                  if another_ship.player_type == game_state.my_type:
-                      continue
-                  his_pos = another_ship.pos.clone()
-                  his_speed = another_ship.speed.clone()
+          best_shot = (-1, None)
+          for another_ship in opp_ships:
+              his_pos = another_ship.pos.clone()
+              his_speed = another_ship.speed.clone()
+              if another_ship.energy == 0:
+                  prediction = Point(0, 0)
+              else:
                   prediction = predict_action(his_action)
-                  if another_ship.energy == 0:
-                      prediction = Point(0, 0)
-                  his_speed += prediction
-                  his_speed += get_gravity(his_pos)
-                  his_pos += his_speed
+              his_speed += prediction
+              his_speed += get_gravity(his_pos)
+              his_pos += his_speed
 
-                  my_pos = ship.pos.clone()
-                  my_speed = ship.speed.clone()
-                  my_speed += Point(-dx, -dy) # very bad '-' :(
-                  my_speed += get_gravity(my_pos)
-                  my_pos += my_speed
+              my_pos = ship.pos.clone()
+              my_speed = ship.speed.clone()
+              my_speed += Point(-dx, -dy) # very bad '-' :(
+              my_speed += get_gravity(my_pos)
+              my_pos += my_speed
 
-                  diff_to_him = his_pos - my_pos
-                  use_demage = min(max_shoot_energy, ship.tiredness_limit - ship.tiredness) # TODO: change it!
-                  real_demage = calc_real_demage(use_demage, diff_to_him)
-                  if another_ship.rest > 5 and another_ship.tiredness + 8 + real_demage - another_ship.rest <= another_ship.tiredness_limit:
-                      continue
-                  if real_demage > use_demage * 1.5 and use_demage > max_shoot_energy - 10 and real_demage > best_shot[0]: # TODO: change condition!
-                      best_shot = (real_demage, make_shoot_request(ship, his_pos, use_demage))
-                      print('shoot?, use {}, expected demage {}'.format(use_demage, real_demage))
-              if best_shot[0] != -1:
-                  print("shoot!", best_shot[0])
-                  ops = (best_shot[1], ops)
+              diff_to_him = his_pos - my_pos
+              use_demage = min(max_shoot_energy, ship.tiredness_limit - ship.tiredness) # TODO: change it!
+              real_demage = calc_real_demage(use_demage, diff_to_him)
+              if another_ship.rest > 5 and another_ship.tiredness + 8 + real_demage - another_ship.rest <= another_ship.tiredness_limit:
+                  continue
+              if real_demage > use_demage * 1.5 and use_demage > max_shoot_energy - 10 and real_demage > best_shot[0]: # TODO: change condition!
+                  best_shot = (real_demage, make_shoot_request(ship, his_pos, use_demage))
+                  print('shoot?, use {}, expected demage {}'.format(use_demage, real_demage))
+          if best_shot[0] != -1:
+              print("shoot!", best_shot[0])
+              ops = (best_shot[1], ops)
 
         else: # type = DEFENDER
-
           if ship.energy == 0:
             continue
 

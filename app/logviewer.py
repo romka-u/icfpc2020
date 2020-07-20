@@ -9,7 +9,7 @@ from common import flatten, GameState, Point, ATTACKER_ID, DEFENDER_ID
 # print(flatten((None, (1559918512028036058, ((112, (None, (4, (16, None)))), None)))))
 
 pygame.init()
-sz = 7
+sz = 3
 
 display_info = pygame.display.Info()
 w = display_info.current_w
