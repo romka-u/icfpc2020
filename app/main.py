@@ -84,7 +84,6 @@ def predict_action(last_action):
                         cur_prediction = apply_transform(next_action, xmul, ymul, swap_coords)
         if cur_prediction is not None:
             options[cur_prediction] = options[cur_prediction] + 1
-    print('predictions: ', options)
     best_prediction = last_action
     best_num = 1
     for k, v in options.items():
