@@ -112,7 +112,7 @@ def make_commands_request(key, game_state):
       if ship.player_type == game_state.my_type:
         print("ship coords =", ship.pos.aslist())
         print('my speed', ship.speed.aslist())
-        if game_state.my_type == ATTACKER_ID or ship.health == 1:
+        if game_state.my_type == ATTACKER_ID:
           best_distance = (787788789, -1)
           best_sequence = []
           for reps in range(2, 4):
@@ -229,6 +229,8 @@ def make_commands_request(key, game_state):
             if temp_ship.player_type == ship.player_type and temp_ship.ship_id != ship.ship_id:
               if temp_ship.pos.x == ship.pos.x and temp_ship.pos.y == ship.pos.y:
                 can_split = False
+          if ship.health == 1:
+            can_split = False
 
           min_seq_length = 0 if can_split else 1
 
