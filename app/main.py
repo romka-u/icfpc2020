@@ -236,12 +236,17 @@ def make_commands_request(key, game_state):
 
           good_sequence = []
           found = False
+          
+          max_passed = -1
+          max_sequence = []
+
           random.shuffle(moves_without_zero) # !!
           for reps in range(min_seq_length, 5):
             for sequence in itertools.product(moves_without_zero, repeat = reps):
               my_pos = Point(ship.pos.x, ship.pos.y)
               my_speed = Point(ship.speed.x, ship.speed.y)
               failed = False
+              passed = 0
               for i in range(256 - game_state.tick):
                 if i < len(sequence):
                   my_speed += sequence[i]
@@ -253,18 +258,22 @@ def make_commands_request(key, game_state):
                 if max(abs(my_pos.x), abs(my_pos.y)) > game_state.world_size:
                   failed = True
                   break
+                passed += 1
               if not failed:
                 good_sequence = sequence
                 found = True
                 break
+              if passed > max_passed:
+                max_passed = passed
+                max_sequence = sequence
             if found:
               break
 
           print('found', found, good_sequence)
 
           if not found:
-            print(':(')
-            continue
+            print('max', max_passed, max_sequence)
+            good_sequence = max_sequence
 
           if len(good_sequence) == 0:
             print('ok split')
