@@ -223,17 +223,12 @@ def make_commands_request(key, game_state):
 
           best_shot = (-1, None, default_accelerate_move)
           safe_moves_2 = []
-          safe_moves = []
           for dx in range(-2, 3):
               for dy in range(-2, 3):
                   if safe_move(ship, game_state, Point(dx, dy)):
                       safe_moves_2.append(Point(dx, dy))
-                      if max(abs(dx), abs(dy)) <= 1:
-                          safe_moves.append(Point(dx, dy))
           for another_ship in opp_ships:
-              moves_to_check = safe_moves
-              if another_ship.health > 1:
-                  moves_to_check = safe_moves_2
+              moves_to_check = safe_moves_2
               for use_accelerate_move in moves_to_check:
                   his_pos = another_ship.pos.clone()
                   his_speed = another_ship.speed.clone()
