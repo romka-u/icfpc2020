@@ -163,10 +163,10 @@ def make_commands_request(key, game_state):
 
           dx = -best_sequence[0].x
           dy = -best_sequence[0].y
-          #if best_distance[0] == 1000:
-          #    dx = 0
-          #    dy = 0
-          #    print('skip accelerate because dist = 1000')
+          if best_distance[0] == 1000:
+              dx = 0
+              dy = 0
+              print('skip accelerate because dist = 1000')
           # TODO: change random?
           if can_skip_accelerate and (ship.tiredness > 10 or (random.randint(0, 4) != 0 and game_state.my_type == ATTACKER_ID)):
               dx = 0
@@ -237,7 +237,7 @@ def make_commands_request(key, game_state):
           good_sequence = []
           found = False
           random.shuffle(moves_without_zero) # !!
-          for reps in range(min_seq_length, 6):
+          for reps in range(min_seq_length, 5):
             for sequence in itertools.product(moves_without_zero, repeat = reps):
               my_pos = Point(ship.pos.x, ship.pos.y)
               my_speed = Point(ship.speed.x, ship.speed.y)
