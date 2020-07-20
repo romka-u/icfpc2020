@@ -24,7 +24,13 @@ def get_my_last_submission():
     url = "https://icfpc2020-api.testkontur.ru/submissions?apiKey=1242ae59bc9f4385b3c3eaa60764a09c"
     r = requests.get(url)
     js = r.json()
-    return (js[0]["submissionId"], js[0]["commitMessage"])
+    print("Your last submissions:")
+    for i in range(min(7, len(js))):
+        print("{0:5d}: {1}".format(i, js[i]["commitMessage"]))
+    print("Select your submission to test:", end=" ")
+    sys.stdout.flush()
+    index = int(sys.stdin.readline().strip())
+    return (js[index]["submissionId"], js[index]["commitMessage"])
 
 def create_game(attacker, defender):
     url = "https://icfpc2020-api.testkontur.ru/games/non-rating/run?attackerSubmissionId={}&defenderSubmissionId={}&apiKey=1242ae59bc9f4385b3c3eaa60764a09c".format(attacker, defender)
@@ -45,7 +51,7 @@ def main():
         print("{0:2d} {1:5.2f} {2} {3}".format(i, s[0], s[1], s[2]))
     print("=" * 30)
     my_sub = get_my_last_submission()
-    print("My last submission: {0} ({1})".format(*my_sub))
+    print("Using my submission: {0} ({1})".format(*my_sub))
     print("Enter ids of teams to play, separated by space:", end=" ")
     sys.stdout.flush()
     try:
