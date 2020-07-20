@@ -93,6 +93,36 @@ def predict_action(last_action):
             best_num = v
     return best_prediction
 
+def make_accelerate_move(ship, dx, dy):
+    return (0, (ship.ship_id, ((dx, dy), None)))
+
+def safe_move(ship, game_state, first_move):
+    moves = []
+    for dx in range(-1, 2):
+        for dy in range(-1, 2):
+            moves.append(Point(dx, dy))
+    reps = 2
+    for sequence in itertools.product(moves, repeat=reps):
+        sequence = list(sequence)
+        sequence.insert(0, first_move)
+        my_pos = ship.pos.clone()
+        my_speed = ship.speed.clone()
+        good = True
+        for i in range(30):
+            if i < len(sequence):
+                my_speed += sequence[i]
+            my_speed += get_gravity(my_pos)
+            my_pos += my_speed
+            if max(abs(my_pos.x), abs(my_pos.y)) <= game_state.planet_size:
+                good = False
+                break
+            if max(abs(my_pos.x), abs(my_pos.y)) > game_state.world_size:
+                good = False
+                break
+        if good:
+            return True
+    return False
+
 
 def make_commands_request(key, game_state):
     print(game_state.my_type)
@@ -171,8 +201,8 @@ def make_commands_request(key, game_state):
           #print('-- --')
           print('dist', best_distance, best_sequence)
 
-          dx = -best_sequence[0].x
-          dy = -best_sequence[0].y
+          dx = best_sequence[0].x
+          dy = best_sequence[0].y
           if best_distance[0] == 1000:
               dx, dy = 0, 0
               print('skip accelerate because dist = 1000')
@@ -180,8 +210,9 @@ def make_commands_request(key, game_state):
           if can_skip_accelerate and (ship.tiredness > 10 or (random.randint(0, 4) != 0 and game_state.my_type == ATTACKER_ID)):
               dx, dy = 0, 0
               print("skip accelerate at this point, because too tired", ship.tiredness)
-          print("go", dx, dy)
-          ops = ((0, (ship.ship_id, ((dx, dy), None))), ops)
+          print("go (probably)", dx, dy)
+
+          default_accelerate_move = Point(dx, dy)
 
           # TODO: THINK ABOUT DISTANCE!
           if best_distance[1] == 0 and game_state.my_type == ATTACKER_ID and len(opp_ships) == 1:
@@ -190,41 +221,52 @@ def make_commands_request(key, game_state):
               print("explode!")
               ops = ((1, (ship.ship_id, None)), ops)
 
-          best_shot = (-1, None)
+          best_shot = (-1, None, default_accelerate_move)
           for another_ship in opp_ships:
-              his_pos = another_ship.pos.clone()
-              his_speed = another_ship.speed.clone()
-              if another_ship.energy == 0:
-                  prediction = Point(0, 0)
-              else:
-                  prediction = predict_action(his_action)
-              his_speed += prediction
-              his_speed += get_gravity(his_pos)
-              his_pos += his_speed
-
-              my_pos = ship.pos.clone()
-              my_speed = ship.speed.clone()
-              my_speed += Point(-dx, -dy) # very bad '-' :(
-              my_speed += get_gravity(my_pos)
-              my_pos += my_speed
-
-              diff_to_him = his_pos - my_pos
-              if max(abs(diff_to_him.x), abs(diff_to_him.y)) <= 1:
-                  continue
-              use_demage = min(max_shoot_energy, ship.tiredness_limit - ship.tiredness) # TODO: change it!
-              real_demage = calc_real_demage(use_demage, diff_to_him)
-              if another_ship.rest > 5 and another_ship.tiredness + 8 + real_demage - another_ship.rest <= another_ship.tiredness_limit:
-                  continue
-              shoot_score = real_demage
+              moves_to_check = [default_accelerate_move]
               if another_ship.health > 1:
-                  shoot_score *= 2
-              if real_demage > use_demage * 1.5 and use_demage > max_shoot_energy - 10 and shoot_score > best_shot[0]: # TODO: change condition!
-                  best_shot = (shoot_score, make_shoot_request(ship, his_pos, use_demage))
-                  print('shoot?, use {}, expected demage {}'.format(use_demage, real_demage))
+                  for dx in range(-2, 3):
+                      for dy in range(-2, 3):
+                          if safe_move(ship, game_state, Point(dx, dy)):
+                              moves_to_check.append(Point(dx, dy))
+              for use_accelerate_move in moves_to_check:
+                  his_pos = another_ship.pos.clone()
+                  his_speed = another_ship.speed.clone()
+                  if another_ship.energy == 0:
+                      prediction = Point(0, 0)
+                  else:
+                      prediction = predict_action(his_action)
+                  his_speed += prediction
+                  his_speed += get_gravity(his_pos)
+                  his_pos += his_speed
+
+                  my_pos = ship.pos.clone()
+                  my_speed = ship.speed.clone()
+                  my_speed += Point(use_accelerate_move.x, use_accelerate_move.y)
+                  my_speed += get_gravity(my_pos)
+                  my_pos += my_speed
+
+                  diff_to_him = his_pos - my_pos
+                  if max(abs(diff_to_him.x), abs(diff_to_him.y)) <= 1:
+                      continue
+                  use_demage = min(max_shoot_energy, ship.tiredness_limit - ship.tiredness) # TODO: change it!
+                  real_demage = calc_real_demage(use_demage, diff_to_him)
+                  if another_ship.rest > 5 and another_ship.tiredness + 8 + real_demage - another_ship.rest <= another_ship.tiredness_limit:
+                      continue
+                  shoot_score = real_demage
+                  if another_ship.health > 1:
+                      shoot_score *= 2
+                  if real_demage > use_demage * 1.5 and use_demage > max_shoot_energy - 10 and shoot_score > best_shot[0]: # TODO: change condition!
+                      best_shot = (shoot_score, make_shoot_request(ship, his_pos, use_demage), use_accelerate_move)
+                      print('shoot?, use {}, expected demage {}'.format(use_demage, real_demage))
+                      if use_accelerate_move != default_accelerate_move:
+                          print('Wow, probably will use different move, ship.health = {}, use_demage = {}, real_demage = {}'.format(another_ship.health, use_demage, real_demage))
           if best_shot[0] != -1:
               print("shoot!", best_shot[0])
               ops = (best_shot[1], ops)
+              default_accelerate_move = best_shot[2] # possible changed out move
 
+          ops = (make_accelerate_move(ship, -default_accelerate_move.x, -default_accelerate_move.y), ops)
         else: # type = DEFENDER
           if ship.energy == 0:
             continue
