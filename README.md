@@ -77,6 +77,9 @@ It turned out that the boot screen contained several clickable "easter eggs":
 * a diagram showing the amount of damage dealt to the ships via detonation. We couldn't figure out the exact meaning of this diagram, so we tried to approximate it, but didn't spend too much time on it.
 
 # Strategy ideas
+## Initial skills configuration
+We used skills `(152, 0, 8, 100)` for defender and `(134, 64, 10, 1)` for attacker. The main idea was to make first parameter as small as possible, but still big enough to fly during whole round. Third parameter should be at least 8 to accelerate without making demage to itself. All left skills were used for 4-th parameter in case of defender and for 2-nd parameter in case of attacker.
+
 ## Defender
 * Initial ideas for finding the direction to thrust: 
   * Brute force over the next 2-3 thrust directions.
@@ -91,7 +94,6 @@ It turned out that the boot screen contained several clickable "easter eggs":
   * Note that attacking ship positions are totally disregarded in this strategy &mdash; we just hope to spawn enough small ships to survive until the end of the game.
 
 ## Attacker
-<!-- TODO: write about chosed skills configuration -->
 * Shoot only at good positions (see shot damage calculation).
 * Shoot only if damage is big enough to decrease target's energy (if you only increase tiredness, and it doesn't reach tiredness limit, it will probably recover in a several turns).
 * Try not to spend energy for acceleration if it is not really needed (because of that we can choose skill configuration with bigger max_damage parameter).
