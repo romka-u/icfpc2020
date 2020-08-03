@@ -21,6 +21,10 @@ g++ -std=c++11 -o sol sol.cpp
 python3 x.py
 ```
 
+Use keys `1` and `2` for zoom and mouse for clicking on elements.
+
+<img src="https://sun6-16.userapi.com/8UCLr5bheXd7BkEesCzo54Gpk-emFPL7ZStxmw/GpQ0cSOPWPY.jpg" width="600">
+
 ### Galaxy evaluator description
 Expressions are stored as trees of nodes: 
 ```
@@ -57,6 +61,9 @@ python3 app/main.py
   * Use keys `o`, `p` to switch between moves
   * Use keys `1`, `2` to zoom
 * app/localrunner.py &mdash; creates a multiplayer game, runs two local bot instances with correct keys, pipe bots logs to logviewer to get a vizualization
+
+
+<img src="https://sun6-14.userapi.com/8zJHgHRQc6G8WbsmbNSckDNAkzVv-1A9mvzoMA/fRqXZ30GKkg.jpg" width="600">
 
 # Galaxy investigation
 
