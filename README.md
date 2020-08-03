@@ -85,7 +85,7 @@ It turned out that the boot screen contained several clickable "easter eggs":
 
 # Strategy ideas
 ## Initial skills configuration
-We used skills `(152, 0, 8, 100)` for defender and `(134, 64, 10, 1)` for attacker. The main idea was to make first parameter as small as possible, but still big enough to fly during whole round. Third parameter should be at least 8 to accelerate without making demage to itself. All left skills were used for 4-th parameter in case of defender and for 2-nd parameter in case of attacker.
+We used skills `(152, 0, 8, 100)` for defender and `(134, 64, 10, 1)` for attacker. The main idea was to make first parameter as small as possible, but still big enough to fly during whole round. Third parameter should be at least 8 to accelerate without making damage to itself. All left skills were used for 4-th parameter in case of defender and for 2-nd parameter in case of attacker.
 
 ## Defender
 * Initial ideas for finding the direction to thrust: 
